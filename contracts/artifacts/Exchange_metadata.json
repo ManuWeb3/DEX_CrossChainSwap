@@ -9,12 +9,22 @@
 				"inputs": [
 					{
 						"internalType": "address",
-						"name": "_CryptoDevToken",
+						"name": "_TGOLDToken",
 						"type": "address"
 					}
 				],
 				"stateMutability": "nonpayable",
 				"type": "constructor"
+			},
+			{
+				"inputs": [],
+				"name": "AddressZeroError",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "SendFailed",
+				"type": "error"
 			},
 			{
 				"anonymous": false,
@@ -65,6 +75,37 @@
 				],
 				"name": "Transfer",
 				"type": "event"
+			},
+			{
+				"inputs": [],
+				"name": "TGOLDTokenAddress",
+				"outputs": [
+					{
+						"internalType": "address",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "_tokensSold",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "_minEth",
+						"type": "uint256"
+					}
+				],
+				"name": "TGOLDTokensToEth",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
 			},
 			{
 				"inputs": [
@@ -153,37 +194,6 @@
 				"type": "function"
 			},
 			{
-				"inputs": [
-					{
-						"internalType": "uint256",
-						"name": "_tokensSold",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
-						"name": "_minEth",
-						"type": "uint256"
-					}
-				],
-				"name": "crypotoDevTokensToEth",
-				"outputs": [],
-				"stateMutability": "nonpayable",
-				"type": "function"
-			},
-			{
-				"inputs": [],
-				"name": "cryptoDevTokenAddress",
-				"outputs": [
-					{
-						"internalType": "address",
-						"name": "",
-						"type": "address"
-					}
-				],
-				"stateMutability": "view",
-				"type": "function"
-			},
-			{
 				"inputs": [],
 				"name": "decimals",
 				"outputs": [
@@ -228,7 +238,7 @@
 						"type": "uint256"
 					}
 				],
-				"name": "ethToCryptoDevTokens",
+				"name": "ethToTGOLDTokens",
 				"outputs": [],
 				"stateMutability": "payable",
 				"type": "function"
@@ -427,6 +437,9 @@
 			},
 			"kind": "dev",
 			"methods": {
+				"TGOLDTokensToEth(uint256,uint256)": {
+					"details": "Swaps TGOLD Tokens for Eth to buy _minEth when selling _tokensSold no payable this time, ERC20 token amount will be one of the 2 parameters of this function"
+				},
 				"addLiquidity(uint256)": {
 					"details": "Adds liquidity to the exchange."
 				},
@@ -439,23 +452,20 @@
 				"balanceOf(address)": {
 					"details": "See {IERC20-balanceOf}."
 				},
-				"crypotoDevTokensToEth(uint256,uint256)": {
-					"details": "Swaps CryptoDev Tokens for Eth to buy _minEth when selling _tokensSold no payable this time"
-				},
 				"decimals()": {
 					"details": "Returns the number of decimals used to get its user representation. For example, if `decimals` equals `2`, a balance of `505` tokens should be displayed to a user as `5.05` (`505 / 10 ** 2`). Tokens usually opt for a value of 18, imitating the relationship between Ether and Wei. This is the default value returned by this function, unless it's overridden. NOTE: This information is only used for _display_ purposes: it in no way affects any of the arithmetic of the contract, including {IERC20-balanceOf} and {IERC20-transfer}."
 				},
 				"decreaseAllowance(address,uint256)": {
 					"details": "Atomically decreases the allowance granted to `spender` by the caller. This is an alternative to {approve} that can be used as a mitigation for problems described in {IERC20-approve}. Emits an {Approval} event indicating the updated allowance. Requirements: - `spender` cannot be the zero address. - `spender` must have allowance for the caller of at least `subtractedValue`."
 				},
-				"ethToCryptoDevTokens(uint256)": {
-					"details": "Swaps Eth for CryptoDev Tokens payable bcz we're accepting Ether in the contract for swapping with CD Tokens to buy _minTokens when selling (payable) Eth"
+				"ethToTGOLDTokens(uint256)": {
+					"details": "Swaps Eth for TGOLD Tokens payable bcz we're accepting Ether in the contract for swapping with TG Tokens to buy _minTokens when selling (payable) Eth"
 				},
 				"getAmountOfTokens(uint256,uint256,uint256)": {
-					"details": "returns the amount of Eth/CD tokens that are required to be returned to the user/trader"
+					"details": "returns the amount of Eth/TG tokens that are required to be returned to the user/trader upon swap"
 				},
 				"getReserve()": {
-					"details": "Returns the amount of `Crypto Dev Tokens` held by the contract (not user)"
+					"details": "Returns the amount of `TGOLD Tokens` held by the Exchange.sol contract (not user)"
 				},
 				"increaseAllowance(address,uint256)": {
 					"details": "Atomically increases the allowance granted to `spender` by the caller. This is an alternative to {approve} that can be used as a mitigation for problems described in {IERC20-approve}. Emits an {Approval} event indicating the updated allowance. Requirements: - `spender` cannot be the zero address."
@@ -464,7 +474,7 @@
 					"details": "Returns the name of the token."
 				},
 				"removeLiquidity(uint256)": {
-					"details": "Returns the amount Eth/Crypto Dev tokens that would be returned to the user in the swap of CD LP tokens with user-funds"
+					"details": "Returns the amount Eth/TGOLD tokens that would be returned to the user in the swap of TG LP tokens with user-funds"
 				},
 				"symbol()": {
 					"details": "Returns the symbol of the token, usually a shorter version of the name."
@@ -536,11 +546,11 @@
 			]
 		},
 		"contracts/Exchange.sol": {
-			"keccak256": "0xcac26bb2cac5930f83c884f91b4dc050312afd13acc226dae0d4d368ddc61dee",
+			"keccak256": "0xc5b662fd6f55b5ea4bdcef9b255a03da24c373abe69fbba3bedadbe5d92e0e80",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://c2d64a978c9405c961d541be944143820c85a95d5efeb683ed25045712e5d934",
-				"dweb:/ipfs/QmdocUNd1fBbHTEbAbRrWj6y98v3md69p4TvBA8d7x2A3Z"
+				"bzz-raw://0c37f4b05d0f1c1dfc66501c322e366309ce0aeda894cd5597187c5228faff1a",
+				"dweb:/ipfs/QmcvwNzbFh62jwikDzQbB2fjm4YqCDa3KpG73rgq67Djfi"
 			]
 		}
 	},
