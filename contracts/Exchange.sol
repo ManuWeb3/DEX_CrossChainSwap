@@ -78,8 +78,10 @@ contract Exchange is ERC20 {
         // TGOLD added is returned by getReserveTGOLD()
         liquidity = getReserveTGOLD();
         // _msgSender() = LProvider here
+        
         // _mint() will mint 'liquidity' amount of tokens...which ones... 
-        // the ones created by the constructor during deployment (TGLP tokens)
+        // the ones created by the constructor during deployment of Exchange.sol (TGLP tokens)
+        // NOT any other ERC20s like TGOLD/CCIP_BnM (external ERC20 contracts)
         _mint(_msgSender(), liquidity);
        }
        else {
@@ -125,6 +127,7 @@ contract Exchange is ERC20 {
         liquidity = (msg.value/ethReserve) * totalSupply();     // exact Golden Ratio for TGOLDTokenAmount calc.
         // the golden ratio * _totalSupply of LP tokens out there in the open market held by LPs will be minted to the current LP
         
+        // _mint() applies only to TGLP token contract
         _mint(_msgSender(), liquidity);
         // IMPORTANT:
         // the _mint() will anyway be coded after both (Eth + TG tokens) have been accepted by the contract
@@ -167,7 +170,8 @@ contract Exchange is ERC20 {
     // first _burn(), then .call{}() and .transfer() TG Tokens
     // first set the state, then transfer funds, per RE-ENTRANCY
     _burn(_msgSender(), _amount);         // burn(), as opposed to _mint()
-    
+    // _burn() applies only to TGLP token contract
+
     //---------------------------
     // TRANSFER # 1: (ETH != ERC20 token, hence .call{}() used)
     // Transfer `ethAmount` of Eth from the contract to the user's wallet
