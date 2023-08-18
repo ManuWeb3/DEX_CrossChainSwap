@@ -6,50 +6,9 @@
 	"output": {
 		"abi": [
 			{
-				"inputs": [
-					{
-						"internalType": "address",
-						"name": "_TGOLDToken",
-						"type": "address"
-					},
-					{
-						"internalType": "address",
-						"name": "_CCIP_BnMTokenAddress",
-						"type": "address"
-					}
-				],
+				"inputs": [],
 				"stateMutability": "nonpayable",
 				"type": "constructor"
-			},
-			{
-				"inputs": [],
-				"name": "AddressZeroError",
-				"type": "error"
-			},
-			{
-				"inputs": [],
-				"name": "InputAmountNotGreaterThanZero",
-				"type": "error"
-			},
-			{
-				"inputs": [],
-				"name": "InsufficientERC20Input",
-				"type": "error"
-			},
-			{
-				"inputs": [],
-				"name": "InvalidReserveQuantity",
-				"type": "error"
-			},
-			{
-				"inputs": [],
-				"name": "OutputAmountLessThanMinimumAmount",
-				"type": "error"
-			},
-			{
-				"inputs": [],
-				"name": "SendFailed",
-				"type": "error"
 			},
 			{
 				"anonymous": false,
@@ -100,43 +59,6 @@
 				],
 				"name": "Transfer",
 				"type": "event"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "uint256",
-						"name": "_tokensSold",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
-						"name": "_minEth",
-						"type": "uint256"
-					}
-				],
-				"name": "TGOLDTokensToEth",
-				"outputs": [],
-				"stateMutability": "nonpayable",
-				"type": "function"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "uint256",
-						"name": "_amount",
-						"type": "uint256"
-					}
-				],
-				"name": "addLiquidity",
-				"outputs": [
-					{
-						"internalType": "uint256",
-						"name": "",
-						"type": "uint256"
-					}
-				],
-				"stateMutability": "payable",
-				"type": "function"
 			},
 			{
 				"inputs": [
@@ -245,100 +167,6 @@
 			{
 				"inputs": [
 					{
-						"internalType": "uint256",
-						"name": "_minTokens",
-						"type": "uint256"
-					}
-				],
-				"name": "ethToTGOLDTokens",
-				"outputs": [],
-				"stateMutability": "payable",
-				"type": "function"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "uint256",
-						"name": "inputAmount",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
-						"name": "inputReserve",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
-						"name": "outputReserve",
-						"type": "uint256"
-					}
-				],
-				"name": "getAmountOfTokens",
-				"outputs": [
-					{
-						"internalType": "uint256",
-						"name": "",
-						"type": "uint256"
-					}
-				],
-				"stateMutability": "pure",
-				"type": "function"
-			},
-			{
-				"inputs": [],
-				"name": "getCCIP_BnMTokenAddress",
-				"outputs": [
-					{
-						"internalType": "address",
-						"name": "",
-						"type": "address"
-					}
-				],
-				"stateMutability": "view",
-				"type": "function"
-			},
-			{
-				"inputs": [],
-				"name": "getReserveCCIP_BnM",
-				"outputs": [
-					{
-						"internalType": "uint256",
-						"name": "",
-						"type": "uint256"
-					}
-				],
-				"stateMutability": "view",
-				"type": "function"
-			},
-			{
-				"inputs": [],
-				"name": "getReserveTGOLD",
-				"outputs": [
-					{
-						"internalType": "uint256",
-						"name": "",
-						"type": "uint256"
-					}
-				],
-				"stateMutability": "view",
-				"type": "function"
-			},
-			{
-				"inputs": [],
-				"name": "getTGOLDTokenAddress",
-				"outputs": [
-					{
-						"internalType": "address",
-						"name": "",
-						"type": "address"
-					}
-				],
-				"stateMutability": "view",
-				"type": "function"
-			},
-			{
-				"inputs": [
-					{
 						"internalType": "address",
 						"name": "spender",
 						"type": "address"
@@ -371,30 +199,6 @@
 					}
 				],
 				"stateMutability": "view",
-				"type": "function"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "uint256",
-						"name": "_amount",
-						"type": "uint256"
-					}
-				],
-				"name": "removeLiquidity",
-				"outputs": [
-					{
-						"internalType": "uint256",
-						"name": "",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
-						"name": "",
-						"type": "uint256"
-					}
-				],
-				"stateMutability": "nonpayable",
 				"type": "function"
 			},
 			{
@@ -488,12 +292,6 @@
 			},
 			"kind": "dev",
 			"methods": {
-				"TGOLDTokensToEth(uint256,uint256)": {
-					"details": "Swaps TGOLD Tokens for Eth to buy _minEth when selling _tokensSold no payable this time, ERC20 token amount will be one of the 2 parameters of this function"
-				},
-				"addLiquidity(uint256)": {
-					"details": "Adds liquidity to the exchange."
-				},
 				"allowance(address,address)": {
 					"details": "See {IERC20-allowance}."
 				},
@@ -509,26 +307,11 @@
 				"decreaseAllowance(address,uint256)": {
 					"details": "Atomically decreases the allowance granted to `spender` by the caller. This is an alternative to {approve} that can be used as a mitigation for problems described in {IERC20-approve}. Emits an {Approval} event indicating the updated allowance. Requirements: - `spender` cannot be the zero address. - `spender` must have allowance for the caller of at least `subtractedValue`."
 				},
-				"ethToTGOLDTokens(uint256)": {
-					"details": "Swaps Eth for TGOLD Tokens payable bcz we're accepting Ether in the contract for swapping with TG Tokens to buy _minTokens when selling (payable) Eth"
-				},
-				"getAmountOfTokens(uint256,uint256,uint256)": {
-					"details": "returns the amount of Eth/TG tokens that are required to be returned to the user/trader upon swap"
-				},
-				"getReserveCCIP_BnM()": {
-					"details": "Returns the amount of `CCIP_BnM Tokens` held by the Exchange.sol contract (not user)"
-				},
-				"getReserveTGOLD()": {
-					"details": "Returns the amount of `TGOLD Tokens` held by the Exchange.sol contract (not user)"
-				},
 				"increaseAllowance(address,uint256)": {
 					"details": "Atomically increases the allowance granted to `spender` by the caller. This is an alternative to {approve} that can be used as a mitigation for problems described in {IERC20-approve}. Emits an {Approval} event indicating the updated allowance. Requirements: - `spender` cannot be the zero address."
 				},
 				"name()": {
 					"details": "Returns the name of the token."
-				},
-				"removeLiquidity(uint256)": {
-					"details": "Returns the amount Eth/TGOLD tokens that would be returned to the user in the swap of TG LP tokens with user-funds"
 				},
 				"symbol()": {
 					"details": "Returns the symbol of the token, usually a shorter version of the name."
@@ -553,7 +336,7 @@
 	},
 	"settings": {
 		"compilationTarget": {
-			"contracts/Exchange.sol": "Exchange"
+			"contracts/TGOLD18.sol": "TGOLD18"
 		},
 		"evmVersion": "paris",
 		"libraries": {},
@@ -599,12 +382,12 @@
 				"dweb:/ipfs/QmRK2Y5Yc6BK7tGKkgsgn3aJEQGi5aakeSPZvS65PV8Xp3"
 			]
 		},
-		"contracts/Exchange.sol": {
-			"keccak256": "0x088986d548a8ccdabfe0b9a829e2ec32fbee1c30f0005c14492a9c676cc22dd3",
+		"contracts/TGOLD18.sol": {
+			"keccak256": "0x0309eca81dddecec9131c4093e4242b07b9835a5b2cd0c1c9968b8896f395e80",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://d3fe3e9a30bc5cfad6e3303eef708fc8206c5005c4a83ee4576d18544cb761a6",
-				"dweb:/ipfs/QmNZarUW5psRnyBnQ3WhpdXwKC2ENqm7pTPKWm887yzMqS"
+				"bzz-raw://939dbec6a1b7211b079a65df4e7e72db386d906dee51950a8db7966cbdd69137",
+				"dweb:/ipfs/QmZzwp3fHJ5KGQWLtzxKu7MePXt4TVk54qwwX21z4Q6T2q"
 			]
 		}
 	},
