@@ -7,7 +7,11 @@ contract Exchange is ERC20 {
 
     error SendFailed();
     error AddressZeroError();
-    // needed for a couple of things
+    error InsufficientERC20Input();
+    error InvalidReserveQuantity();
+    error InputAmountNotGreaterThanZero();
+    error OutputAmountLessThanMinimumAmount();
+    // ERC20 is needed for a couple of things
     // 1. TG token is an ERC20 one
     // 2. input this address and check the balanceOf(thisContract)
     address public TGOLDTokenAddress;
@@ -97,7 +101,10 @@ contract Exchange is ERC20 {
          uint256 TGOLDTokenAmount = (msg.value/ethReserve)*TGOLDTokenReserve; 
         // calculateTG() in addLiquidity.js of Front end
 
-        require(_amount >= TGOLDTokenAmount, "Amount of tokens sent is less than the minimum tokens required");
+        // require(_amount >= TGOLDTokenAmount, "Amount of tokens sent is less than the minimum tokens required");
+        if(_amount < TGOLDTokenAmount) {
+            revert InsufficientERC20Input();
+        }
         // transfer only (TGOLDTokenAmount user can add) amount of `TGOLD tokens` from users account
         // to the contract
 
@@ -123,7 +130,10 @@ contract Exchange is ERC20 {
     * in the swap of TG LP tokens with user-funds
     */
    function removeLiquidity(uint _amount) public returns (uint , uint) {
-    require(_amount > 0, "_amount should be greater than zero");
+    // require(_amount > 0, "_amount should be greater than zero");
+    if(_amount <=0) {
+        revert InputAmountNotGreaterThanZero();
+    }
 
     uint ethReserve = address(this).balance;        // current ETH reserve
     uint _totalSupply = totalSupply();              // current TG LP tokens reserve
@@ -180,7 +190,10 @@ contract Exchange is ERC20 {
     uint256 inputReserve, 
     uint256 outputReserve) 
     public pure returns (uint256) {
-        require(inputReserve>0 && outputReserve > 0, "Invalid reserves");
+        // require(inputReserve>0 && outputReserve > 0, "Invalid reserves");
+        if(inputReserve < 0 || outputReserve < 0) {
+            revert InvalidReserveQuantity();
+        }
         // We are charging a fee of `1%`
         // Input amount with fee = (input amount - (1*(input amount)/100)) = ((input amount)*99)/100
         uint256 inputAmountWithFee = (inputAmount*99)/100;
@@ -213,7 +226,10 @@ contract Exchange is ERC20 {
         address(this).balance - msg.value,          // always Eth-balance SHOULD BE the one that's before msg.value adds to the EthReserve
         tokenReserve            // no input of TG Tokens, hence getReserve() already returns amount of TG Tokens without any new input considered
     );
-    require(tokensBought >= _minTokens, "Insufficient output amount, as per what you expect");
+    // require(tokensBought >= _minTokens, "Insufficient output amount, as per what you expect");
+    if(tokensBought < _minTokens) {
+        revert OutputAmountLessThanMinimumAmount();
+    }
     // Transfer ERC20 tokensBought to the user
     // when we did not create a specific interface for .transfer/From() in this contract
     // and we can use ERC20 directly as we're inheriting OZ's ERC20
@@ -235,8 +251,10 @@ contract Exchange is ERC20 {
         address(this).balance       // no "payable" this time. Hence, reserve is the same, no need to subtract msg.value
     );
 
-    require(ethBought >= _minEth, "Insufficient output amount, as per what you expect");
-    
+    // require(ethBought >= _minEth, "Insufficient output amount, as per what you expect");
+    if(ethBought < _minEth) {
+        revert OutputAmountLessThanMinimumAmount();
+    }
     // ADDITIONAL STEP OF TRANSFERFROM () IN THIS SWAP
     // the contract should trasnferFrom() _tokensSold first from the user's balance of TG tokens
     // to itself (basically, ERC20 mapping's updated)
@@ -249,6 +267,9 @@ contract Exchange is ERC20 {
 
     // now, once the contract has ERC20 TG tokens, .call{EthBought}
     (bool success, ) = _msgSender().call{value: ethBought}("");
-    require(success, "Eth Transfer Failed");
+    //require(success, "Eth Transfer Failed");
+    if (!success) {
+        revert SendFailed();
+    }
    }    
 }

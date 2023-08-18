@@ -23,6 +23,26 @@
 			},
 			{
 				"inputs": [],
+				"name": "InputAmountNotGreaterThanZero",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "InsufficientERC20Input",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "InvalidReserveQuantity",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "OutputAmountLessThanMinimumAmount",
+				"type": "error"
+			},
+			{
+				"inputs": [],
 				"name": "SendFailed",
 				"type": "error"
 			},
@@ -546,11 +566,11 @@
 			]
 		},
 		"contracts/Exchange.sol": {
-			"keccak256": "0xc5b662fd6f55b5ea4bdcef9b255a03da24c373abe69fbba3bedadbe5d92e0e80",
+			"keccak256": "0xd87afdc21772458a86f7bb86fb7b7770304385376ff9e63c0783bea9c77ee70f",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://0c37f4b05d0f1c1dfc66501c322e366309ce0aeda894cd5597187c5228faff1a",
-				"dweb:/ipfs/QmcvwNzbFh62jwikDzQbB2fjm4YqCDa3KpG73rgq67Djfi"
+				"bzz-raw://8ae3181110a7650e2be7efe9ab4b76733ea8cacc21c6953f782887f92f3e7a87",
+				"dweb:/ipfs/QmPfxyJv4s3qfvp3Xn5GdXSxkTabH5FymHT23DzxBcEYPs"
 			]
 		}
 	},
