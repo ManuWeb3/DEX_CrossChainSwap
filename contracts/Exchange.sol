@@ -118,7 +118,11 @@ contract Exchange is ERC20 {
          // THE GOLDEN RATIO HAS TO BE MAINTAINED
          
          // STEP # 1: CALCULATED INPUTS (No straight) : B/C Notebook # 8, pg. # 64
-         uint256 CCIP_BnMTokenAmount = (_amountTGOLD/TGOLDReserve) * CCIP_BnMReserve; // exact Golden Ratio for Liquidity calc.
+         uint256 CCIP_BnMTokenAmount = (_amountTGOLD * CCIP_BnMReserve) / TGOLDReserve; // exact Golden Ratio for Liquidity calc.
+        // console.log("_amountTGOLD: ", _amountTGOLD);
+        // console.log("TGOLDReserve: ", TGOLDReserve);
+        // console.log("CCIP_BnMReserve: ", CCIP_BnMReserve);
+        // console.log("Calculated CCIP_BnMTokenAmount: ", CCIP_BnMTokenAmount);
         // calculateCCIP_BnM() in addLiquidity.js of Front end
         if(_amountCCIP_BnM < CCIP_BnMTokenAmount) {
             revert InsufficientERC20Input();
@@ -135,7 +139,8 @@ contract Exchange is ERC20 {
         // totalSupply() increases in proportion to the (_amountTGOLD/TGOLDREserve:Before adding _amountTGOLD)
         
         // STEP # 2: CALCULATED INPUTS (No straight) : B/C Notebook # 8, pg. # 64 
-        liquidity = (_amountTGOLD/TGOLDReserve) * totalSupply();
+        // console.log("Total Supply of TGLP liquidity token: ", totalSupply());
+        liquidity = (_amountTGOLD * totalSupply())  / TGOLDReserve;
         // (the golden ratio) * _totalSupply ( _totalSupply = private state var of inherited ERC20)...
         // Is LP tokens out there in the open market held by LPs, will be minted to the current LP
         // cannot use "getReserveTGOLD()" in place of TGOLDReserve in liquidity calc. above @ 144
@@ -153,11 +158,11 @@ contract Exchange is ERC20 {
    }
 
    /**
-    * @dev Returns the amount Eth/TGOLD tokens that would be returned to the user
-    * in the swap of TG LP tokens with user-funds
+    * @dev Returns the amount TGOLD/CCIP_BnM tokens that would be returned to the user
+    * in the swap of TG LP tokens for user-funds
     */
-   function removeLiquidity(uint _amount) public returns (uint , uint) {
-    if(_amount <=0) {
+   function removeLiquidity(uint _amountTGLP) public returns (uint , uint) {
+    if(_amountTGLP <= 0) {
         revert InputAmountNotGreaterThanZero();
     }
 
@@ -169,14 +174,14 @@ contract Exchange is ERC20 {
     // = (amount of LP tokens that user wants to withdraw) / (total supply of LP tokens)
     // Then by same maths -> (Eth sent back to the user)
     // = (current Eth reserve * amount of LP tokens that user wants to withdraw) / (total supply of LP tokens)
-    uint ethAmount = (ethReserve * _amount)/ _totalSupply;      // formulae # 1, ETH determined, later transfer
+    uint ethAmount = (ethReserve * _amountTGLP)/ _totalSupply;      // formulae # 1, ETH determined, later transfer
     // The amount of TGOLD token that would be sent back to the user is based
     // on a ratio
     // Ratio is -> (TGOLD sent back to the user) / (current TGOLD token reserve)
     // = (amount of LP tokens that user wants to withdraw) / (total supply of LP tokens)
     // Then by some maths -> (TGOLD sent back to the user)
     // = (current TGOLD token reserve * amount of LP tokens that user wants to withdraw) / (total supply of LP tokens)
-    uint TGOLDTokenAmount = (getReserveTGOLD() * _amount)/ _totalSupply;     // formulae # 2, TGOLDTokenAmount determined, later transfer
+    uint TGOLDTokenAmount = (getReserveTGOLD() * _amountTGLP)/ _totalSupply;     // formulae # 2, TGOLDTokenAmount determined, later transfer
     
     // Burn the sent LP tokens from the user's wallet because they are already sent to
     // remove liquidity
@@ -184,7 +189,7 @@ contract Exchange is ERC20 {
     // IMPORTANT:
     // first _burn(), then .call{}() and .transfer() TG Tokens
     // first set the state, then transfer funds, per RE-ENTRANCY
-    _burn(_msgSender(), _amount);         // burn(), as opposed to _mint()
+    _burn(_msgSender(), _amountTGLP);         // burn(), as opposed to _mint()
     // _burn() applies only to TGLP token contract
 
     //---------------------------
@@ -284,13 +289,12 @@ contract Exchange is ERC20 {
      * @return (optional)
      */
      function _addBothTokensInLP(IERC20 TGOLDToken, uint256 _amountTGOLD, IERC20 CCIP_BnMToken, uint256 _amountCCIP_BnM) internal returns (uint256, uint256) {
-        TGOLDToken.approve(address(this), _amountTGOLD);
+        // console.log("msg.sender: ", _msgSender());
+        // first approve, then only transferFrom()
+        // TGOLDToken.approve(address(this), _amountTGOLD);                
+        // CCIP_BnMToken.approve(address(this), _amountCCIP_BnM);
         // avoid accessing msg.sender directly
         TGOLDToken.transferFrom(_msgSender(), address(this), _amountTGOLD);
-        
-        // Adding CCIP_BnM to LP
-        CCIP_BnMToken.approve(address(this), _amountCCIP_BnM);
-        // avoid accessing msg.sender directly
         CCIP_BnMToken.transferFrom(_msgSender(), address(this), _amountCCIP_BnM);
         
         emit AddedLiquidty(_amountTGOLD, _amountCCIP_BnM);
@@ -345,3 +349,4 @@ contract Exchange is ERC20 {
         return ERC20(CCIP_BnMTokenAddress).balanceOf(address(this));   // convention - IERC20(address).balaOf(address)
     }
 }
+

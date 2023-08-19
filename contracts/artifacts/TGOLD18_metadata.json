@@ -336,7 +336,7 @@
 	},
 	"settings": {
 		"compilationTarget": {
-			"contracts/CCIP_BnMDummy.sol": "TGOLD18"
+			"contracts/TGOLD18.sol": "TGOLD18"
 		},
 		"evmVersion": "paris",
 		"libraries": {},
@@ -382,7 +382,7 @@
 				"dweb:/ipfs/QmRK2Y5Yc6BK7tGKkgsgn3aJEQGi5aakeSPZvS65PV8Xp3"
 			]
 		},
-		"contracts/CCIP_BnMDummy.sol": {
+		"contracts/TGOLD18.sol": {
 			"keccak256": "0x0309eca81dddecec9131c4093e4242b07b9835a5b2cd0c1c9968b8896f395e80",
 			"license": "MIT",
 			"urls": [
