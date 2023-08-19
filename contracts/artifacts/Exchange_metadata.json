@@ -55,6 +55,25 @@
 				"anonymous": false,
 				"inputs": [
 					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"name": "AddedLiquiidty",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
 						"indexed": true,
 						"internalType": "address",
 						"name": "owner",
@@ -74,6 +93,36 @@
 					}
 				],
 				"name": "Approval",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [],
+				"name": "BunrtLPTokens",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [],
+				"name": "MintedLPTokens",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [],
+				"name": "RemovedLiquidity",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [],
+				"name": "SwappedCCIP_BnMToTGOLD",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [],
+				"name": "SwappedTGOLDToCCIP_BnM",
 				"type": "event"
 			},
 			{
@@ -123,7 +172,12 @@
 				"inputs": [
 					{
 						"internalType": "uint256",
-						"name": "_amount",
+						"name": "_amountTGOLD",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "_amountCCIP_BnM",
 						"type": "uint256"
 					}
 				],
@@ -135,7 +189,7 @@
 						"type": "uint256"
 					}
 				],
-				"stateMutability": "payable",
+				"stateMutability": "nonpayable",
 				"type": "function"
 			},
 			{
@@ -491,8 +545,11 @@
 				"TGOLDTokensToEth(uint256,uint256)": {
 					"details": "Swaps TGOLD Tokens for Eth to buy _minEth when selling _tokensSold no payable this time, ERC20 token amount will be one of the 2 parameters of this function"
 				},
-				"addLiquidity(uint256)": {
-					"details": "Adds liquidity to the exchange."
+				"addLiquidity(uint256,uint256)": {
+					"details": "Adds liquidity to the exchange.",
+					"params": {
+						"_amountCCIP_BnM": "CCIP_BnM tokens deposited by the LP"
+					}
 				},
 				"allowance(address,address)": {
 					"details": "See {IERC20-allowance}."
@@ -547,7 +604,12 @@
 		},
 		"userdoc": {
 			"kind": "user",
-			"methods": {},
+			"methods": {
+				"addLiquidity(uint256,uint256)": {
+					"notice": "@param _amountTGOLD TG Tokens deposited by the LP"
+				}
+			},
+			"notice": "All the frontend scripts also get changed with the new token-pair here",
 			"version": 1
 		}
 	},
@@ -600,11 +662,19 @@
 			]
 		},
 		"contracts/Exchange.sol": {
-			"keccak256": "0x088986d548a8ccdabfe0b9a829e2ec32fbee1c30f0005c14492a9c676cc22dd3",
+			"keccak256": "0x10cda73ed59937d0483c1d70250387de0aeaa309659de7351a967f0e3c1e895a",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://d3fe3e9a30bc5cfad6e3303eef708fc8206c5005c4a83ee4576d18544cb761a6",
-				"dweb:/ipfs/QmNZarUW5psRnyBnQ3WhpdXwKC2ENqm7pTPKWm887yzMqS"
+				"bzz-raw://b3505d009478b8b49043ac4ca9028e02987343efa8910b993a272dd2d055ebdc",
+				"dweb:/ipfs/QmbjBhTaWzY8xUTGoFJtAHf532xtF6crj9Gp2Z2ybYrh1C"
+			]
+		},
+		"hardhat/console.sol": {
+			"keccak256": "0x7434453e6d3b7d0e5d0eb7846ffdbc27f0ccf3b163591263739b628074dc103a",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://49355f780520494d1d5a0f01858385e51bb5280ce0ecfb960f16995065dca395",
+				"dweb:/ipfs/QmSwJ6C5QLz6xKeQZS8wbwjU1KxRFTYfwbGmtzisd5sRW4"
 			]
 		}
 	},

@@ -2,12 +2,16 @@
 pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "hardhat/console.sol";
 
 /**
 @title
 @notice
 @dev
 */
+
+/// All the frontend scripts also get changed with the new token-pair here
+
 contract Exchange is ERC20 {
 
     error SendFailed();
@@ -16,6 +20,13 @@ contract Exchange is ERC20 {
     error InvalidReserveQuantity();
     error InputAmountNotGreaterThanZero();
     error OutputAmountLessThanMinimumAmount();
+
+    event AddedLiquiidty(uint256, uint256);
+    event RemovedLiquidity();
+    event MintedLPTokens();
+    event BunrtLPTokens();
+    event SwappedTGOLDToCCIP_BnM();
+    event SwappedCCIP_BnMToTGOLD();
     // ERC20 is needed for a couple of things
     // 1. TG token is an ERC20 one
     // 2. input this address and check the balanceOf(thisContract)
@@ -41,10 +52,10 @@ contract Exchange is ERC20 {
         uint256 liquidity;      // in if() else() = TG LP tokens to be minted to LP, has to be calculated
         // this liquidity is always tied to TGOLDTokenAmount deposited
 
-        uint256 TGOLDReserve = getReserveTGOLD();      // TG Reserve
-        uint256 CCIP_BnMReserve = getReserveCCIP_BnM();      // CCIP_BnM Reserve
+        uint256 TGOLDReserve = getReserveTGOLD();   // TG Reserve, 1st addLiq -> TG reserve = 0, BUT later txns (later-1) reserve-value
+        uint256 CCIP_BnMReserve = getReserveCCIP_BnM();         // CCIP_BnM Reserve
         // instantiated 2 objects of type ERC20 for TGToken and CCIP_BnM contracts deployed at those addresses
-        IERC20 TGOLDToken = IERC20(TGOLDTokenAddress);      // will stick with IERC20 as ABI to instantiate
+        IERC20 TGOLDToken = IERC20(TGOLDTokenAddress);          // will stick with IERC20 as ABI to instantiate
         IERC20 CCIP_BnMToken = IERC20(CCIP_BnMTokenAddress);       
         /*
         If the reserve is empty, intake any user supplied value for
@@ -56,14 +67,17 @@ contract Exchange is ERC20 {
         
         // WHY not add this here in Solidity itself:
         // Adding TGOLD to LP
-        TGOLDToken.approve(address(this), _amountTGOLD);
+        //TGOLDToken.approve(address(this), _amountTGOLD);
         // avoid accessing msg.sender directly
-        TGOLDToken.transferFrom(_msgSender(), address(this), _amountTGOLD);
+        //TGOLDToken.transferFrom(_msgSender(), address(this), _amountTGOLD);
         
         // Adding CCIP_BnM to LP
-        CCIP_BnMToken.approve(address(this), _amountCCIP_BnM);
+        //CCIP_BnMToken.approve(address(this), _amountCCIP_BnM);
         // avoid accessing msg.sender directly
-        CCIP_BnMToken.transferFrom(_msgSender(), address(this), _amountCCIP_BnM);
+        //CCIP_BnMToken.transferFrom(_msgSender(), address(this), _amountCCIP_BnM);
+        
+        // STEP # 1: STRAIGHT INPUTS (No calculation): B/C Notebook # 8, pg. # 64
+        _addBothTokensInLP(TGOLDToken, _amountTGOLD, CCIP_BnMToken, _amountCCIP_BnM);
         // _amountTGOLD is the amount of TG token itself whose obj is created and initialized above to exec transferFrom()
         // as this is exactly how it's done in Remix's interface
 
@@ -76,62 +90,68 @@ contract Exchange is ERC20 {
         // bcz TGOLD internally works as 10e18 units with balanceOf(ExchangeContractAddress)
         // 1st time TGOLDReserve is 0. So, whatever TGOLD gets added to LP is the liquidity itself
         // TGOLD added is returned by getReserveTGOLD()
-        liquidity = getReserveTGOLD();
-        // _msgSender() = LProvider here
         
-        // _mint() will mint 'liquidity' amount of tokens...which ones... 
+        // STEP # 2: STRAIGHT INPUTS (No calculation): B/C Notebook # 8, pg. # 64
+        liquidity = getReserveTGOLD();       // till this point,TG reserve != 0
+        // "liquidity" var added here for clarity else directly _mint(_msgSender(), getReserveTGOLD())
+        // anyway, _msgSender() = LProvider here
+        
+        // STEP # 3: _mint() will mint 'liquidity' amount of tokens...which ones... 
         // the ones created by the constructor during deployment of Exchange.sol (TGLP tokens)
         // NOT any other ERC20s like TGOLD/CCIP_BnM (external ERC20 contracts)
         _mint(_msgSender(), liquidity);
        }
        else {
         /*
-            If the reserve is not empty, intake any user supplied value for
-            `Ether` and determine according to the ratio how many `TGOLD` tokens
+            If the TGOLD reserve is not empty, intake any user supplied value for
+            `TGOLD` and determine according to the ratio how many `CCIP_BnM` tokens
             need to be supplied to prevent any large price impacts because of the additional
-            liquidity
+            liquidity for either of the 2 assets in the pool
         */
-        // EthReserve should be the current ethBalance subtracted by the value of ether sent by the user
+        // TGOLDReserve should be the current TGOLDBalance subtracted by the value of current TGOLD just deposited by the user
         // in the current `addLiquidity` call
-        // that's why, we already calculated ethBalance = address(this).bal
-        // as it will be needed everytime the addLiq() execs
-        // ethBal instantly takes in payable-ether transfered by user to the contract
-        // in address(this).bal (not at the end of f() call)
-        // ethReserve actually points to the value of eth stored in contract right before this txn ran by the user/LP
-        // by sutracting msg.value
-            uint256 ethReserve = ethBalance - msg.value;
-         // Ratio should always be maintained so that there are no major price impacts when adding liquidity
-         // Ratio here is 
-         // -> (TGOLDTokenAmount user can add/TGOLDTokenReserve already in the contract) = (Eth Sent by the user/Eth Reserve already in the contract);
+        // getReserveTGOLD() will be needed everytime the addLiq() execs
+        // TGOLD amount is not auto-added as it gets added to this Exchange.sol's balance only after transferFrom() execs
+         
+         // Golden Ratio should always be maintained so that there are no major price impacts when adding liquidity
+         // Golden Ratio here is :
+         // -> (TGOLDTokenAmount user added / TGOLDTokenReserve already in the contract) = (CCIP_BnM that should be sent by the user/CCIP_BnM Reserve already in the Exchange.sol);
          // "already" = just before this txn gets mined
-         // So doing some maths, (TGOLDTokenAmount user can add) = (Eth Sent by the user * TGOLDTokenReserve /Eth Reserve);
+         // So doing some maths, (Minimum CCIP_BnM user should add) = (TGOLDTokenAmount Sent by the user * CCIP_BnMReserve /TGOLDTokenAmount Reserve);
 
-         // TGOLDTokenAmount- what an LP can deposit, IDEALLY, MINIMUM (>=) this should be the _amount else revert 
-         // TGOLDTokenReserve - by getReserve();
+         // CCIP_BnM - what an LP should deposit, IDEALLY, MINIMUM (>=) this should be the _amountCCIP_BnM else revert 
+         // TGOLDTokenReserve - by getReserveTGOLD();
          // THE GOLDEN RATIO HAS TO BE MAINTAINED
-         uint256 TGOLDTokenAmount = (msg.value/ethReserve) * TGOLDReserve; // exact Golden Ratio for Liquidity calc.
-        // calculateTG() in addLiquidity.js of Front end
-
-        if(_amountTGOLD < TGOLDTokenAmount) {
+         
+         // STEP # 1: CALCULATED INPUTS (No straight) : B/C Notebook # 8, pg. # 64
+         uint256 CCIP_BnMTokenAmount = (_amountTGOLD/TGOLDReserve) * CCIP_BnMReserve; // exact Golden Ratio for Liquidity calc.
+        // calculateCCIP_BnM() in addLiquidity.js of Front end
+        if(_amountCCIP_BnM < CCIP_BnMTokenAmount) {
             revert InsufficientERC20Input();
         }
-        // transfer only (TGOLDTokenAmount user can add) amount of `TGOLD tokens` from users account
-        // to the contract
+        // transfer only (CCIP_BnMTokenAmount user can add) amount of `CCIP_BnM tokens` from user's account
+        // to Exchange.sol
 
-        // INTERNAL TXN
-        TGOLDToken.approve(address(this), _amountTGOLD);
-        TGOLDToken.transferFrom(_msgSender(), address(this), TGOLDTokenAmount);
+        // INTERNAL TXNs
+        // TGOLDToken.approve(address(this), _amountTGOLD);
+        // TGOLDToken.transferFrom(_msgSender(), address(this), _amountTGOLD);
+        _addBothTokensInLP(TGOLDToken, _amountTGOLD, CCIP_BnMToken, CCIP_BnMTokenAmount);
         // calc. liquidity = LP tokens to be minted to the LProvider thru _mint()
         // 2ND FACET OF THE GOLDEN RATION w.r.t TG LP tokens (liquidity)
-        // totalSupply() increases in proportion to the (msg.value/ethReserve)
-        liquidity = (msg.value/ethReserve) * totalSupply();     // exact Golden Ratio for TGOLDTokenAmount calc.
-        // the golden ratio * _totalSupply of LP tokens out there in the open market held by LPs will be minted to the current LP
+        // totalSupply() increases in proportion to the (_amountTGOLD/TGOLDREserve:Before adding _amountTGOLD)
         
-        // _mint() applies only to TGLP token contract
+        // STEP # 2: CALCULATED INPUTS (No straight) : B/C Notebook # 8, pg. # 64 
+        liquidity = (_amountTGOLD/TGOLDReserve) * totalSupply();
+        // (the golden ratio) * _totalSupply ( _totalSupply = private state var of inherited ERC20)...
+        // Is LP tokens out there in the open market held by LPs, will be minted to the current LP
+        // cannot use "getReserveTGOLD()" in place of TGOLDReserve in liquidity calc. above @ 144
+        // as getReserveTGOLD() returns reserve value that NOW includes the newly added TGOLDTokenAmount via _addBothTokensInLP()
+        
+        // STEP # 3: _mint() applies only to TGLP token contract
         _mint(_msgSender(), liquidity);
         // IMPORTANT:
-        // the _mint() will anyway be coded after both (Eth + TG tokens) have been accepted by the contract
-        // to avoid the situation when he already got the TG LP tokens and his eth+TG tokens are yet to be accepted by the contract
+        // the _mint() will anyway be coded after both (TGOLD + CCIPBnM tokens) have been accepted by Exchange.sol
+        // to avoid the situation when user already got the TG LP tokens before its TGOLD+CCIP_BnM tokens are accepted by Exchange.sol
         }
         return liquidity;
         // returning uint256
@@ -256,7 +276,24 @@ contract Exchange is ERC20 {
    }
 
     // ================================
-    // GETTERS / Other Helper functions
+    // GETTERS / Other Helper or internal functions
+
+    /**
+     * @dev returns the amount of Eth/TG tokens that are required to be returned to the user/trader upon swap
+     * @param _amountTGOLD amount of TGOLD input
+     * @param _amountCCIP_BnM amount of CCIP_BnM input
+     * @return (optional)
+     */
+     function _addBothTokensInLP(IERC20 TGOLDToken, uint256 _amountTGOLD, IERC20 CCIP_BnMToken, uint256 _amountCCIP_BnM) internal returns (uint256, uint256) {
+        TGOLDToken.approve(address(this), _amountTGOLD);
+        // avoid accessing msg.sender directly
+        TGOLDToken.transferFrom(_msgSender(), address(this), _amountTGOLD);
+        
+        // Adding CCIP_BnM to LP
+        CCIP_BnMToken.approve(address(this), _amountCCIP_BnM);
+        // avoid accessing msg.sender directly
+        CCIP_BnMToken.transferFrom(_msgSender(), address(this), _amountCCIP_BnM);
+     }
 
     /**
      * @dev returns the amount of Eth/TG tokens that are required to be returned to the user/trader upon swap
