@@ -57,17 +57,17 @@
 					{
 						"indexed": false,
 						"internalType": "uint256",
-						"name": "",
+						"name": "_amountTGOLD",
 						"type": "uint256"
 					},
 					{
 						"indexed": false,
 						"internalType": "uint256",
-						"name": "",
+						"name": "_amountCCIP_BnM",
 						"type": "uint256"
 					}
 				],
-				"name": "AddedLiquiidty",
+				"name": "AddedLiquidty",
 				"type": "event"
 			},
 			{
@@ -97,31 +97,52 @@
 			},
 			{
 				"anonymous": false,
-				"inputs": [],
-				"name": "BunrtLPTokens",
-				"type": "event"
-			},
-			{
-				"anonymous": false,
-				"inputs": [],
-				"name": "MintedLPTokens",
-				"type": "event"
-			},
-			{
-				"anonymous": false,
-				"inputs": [],
+				"inputs": [
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "_amountTGLP",
+						"type": "uint256"
+					}
+				],
 				"name": "RemovedLiquidity",
 				"type": "event"
 			},
 			{
 				"anonymous": false,
-				"inputs": [],
+				"inputs": [
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "_amountTGOLD",
+						"type": "uint256"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "_amountCCIP_BnM",
+						"type": "uint256"
+					}
+				],
 				"name": "SwappedCCIP_BnMToTGOLD",
 				"type": "event"
 			},
 			{
 				"anonymous": false,
-				"inputs": [],
+				"inputs": [
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "_amountTGOLD",
+						"type": "uint256"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "_amountCCIP_BnM",
+						"type": "uint256"
+					}
+				],
 				"name": "SwappedTGOLDToCCIP_BnM",
 				"type": "event"
 			},
@@ -662,11 +683,11 @@
 			]
 		},
 		"contracts/Exchange.sol": {
-			"keccak256": "0x10cda73ed59937d0483c1d70250387de0aeaa309659de7351a967f0e3c1e895a",
+			"keccak256": "0xca1db7c4bd93ce147c51d5eabccd41e6873d4059eea8378131f9a2b2bc376222",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://b3505d009478b8b49043ac4ca9028e02987343efa8910b993a272dd2d055ebdc",
-				"dweb:/ipfs/QmbjBhTaWzY8xUTGoFJtAHf532xtF6crj9Gp2Z2ybYrh1C"
+				"bzz-raw://10a2d9b0e1a8f70cc75640649618ba968ae7778c82a84efb1c6ecb2e0cd668da",
+				"dweb:/ipfs/QmYyNgQmnhZnoeceZKyrkN6XoXS54t1iuqaGxYqvJPqycE"
 			]
 		},
 		"hardhat/console.sol": {

@@ -21,18 +21,16 @@ contract Exchange is ERC20 {
     error InputAmountNotGreaterThanZero();
     error OutputAmountLessThanMinimumAmount();
 
-    event AddedLiquiidty(uint256, uint256);
-    event RemovedLiquidity();
-    event MintedLPTokens();
-    event BunrtLPTokens();
-    event SwappedTGOLDToCCIP_BnM();
-    event SwappedCCIP_BnMToTGOLD();
-    // ERC20 is needed for a couple of things
-    // 1. TG token is an ERC20 one
-    // 2. input this address and check the balanceOf(thisContract)
+    event AddedLiquidty(uint256 _amountTGOLD, uint256 _amountCCIP_BnM); // default ERC20 events not that discrete
+    event RemovedLiquidity(uint256 _amountTGLP);                        // default ERC20 events not that discrete
+    event SwappedTGOLDToCCIP_BnM(uint256 _amountTGOLD, uint256 _amountCCIP_BnM);
+    event SwappedCCIP_BnMToTGOLD(uint256 _amountTGOLD, uint256 _amountCCIP_BnM);
+
+    // ERC20 is inherited as TGLP, TG, CCIP_BnM tokens are ERC20 ones
     address private TGOLDTokenAddress;
     address private CCIP_BnMTokenAddress;
 
+    // Both TGOLD and CCIP_BnM must already be deployed, pass their addresses
     constructor (address _TGOLDToken, address _CCIP_BnMTokenAddress) ERC20 ("TGOLD LP Token", "TGLP") {
         if(_TGOLDToken == address(0) || _CCIP_BnMTokenAddress == address(0)) {
             revert AddressZeroError();
@@ -57,6 +55,7 @@ contract Exchange is ERC20 {
         // instantiated 2 objects of type ERC20 for TGToken and CCIP_BnM contracts deployed at those addresses
         IERC20 TGOLDToken = IERC20(TGOLDTokenAddress);          // will stick with IERC20 as ABI to instantiate
         IERC20 CCIP_BnMToken = IERC20(CCIP_BnMTokenAddress);       
+        // console.log("TGOLDToken: ", TGOLDToken);
         /*
         If the reserve is empty, intake any user supplied value for
         `TGOLD` and `CCIP_BnM` tokens because there is no ratio currently
@@ -95,11 +94,6 @@ contract Exchange is ERC20 {
         liquidity = getReserveTGOLD();       // till this point,TG reserve != 0
         // "liquidity" var added here for clarity else directly _mint(_msgSender(), getReserveTGOLD())
         // anyway, _msgSender() = LProvider here
-        
-        // STEP # 3: _mint() will mint 'liquidity' amount of tokens...which ones... 
-        // the ones created by the constructor during deployment of Exchange.sol (TGLP tokens)
-        // NOT any other ERC20s like TGOLD/CCIP_BnM (external ERC20 contracts)
-        _mint(_msgSender(), liquidity);
        }
        else {
         /*
@@ -146,13 +140,14 @@ contract Exchange is ERC20 {
         // Is LP tokens out there in the open market held by LPs, will be minted to the current LP
         // cannot use "getReserveTGOLD()" in place of TGOLDReserve in liquidity calc. above @ 144
         // as getReserveTGOLD() returns reserve value that NOW includes the newly added TGOLDTokenAmount via _addBothTokensInLP()
-        
-        // STEP # 3: _mint() applies only to TGLP token contract
+        }
+        // COMMON STEP # 3 for if()/else(): _mint() will mint 'liquidity' amount of tokens...which ones... 
+        // the ones created by the constructor during deployment of Exchange.sol (TGLP tokens)
+        // NOT any other ERC20s like TGOLD/CCIP_BnM (external ERC20 contracts)
         _mint(_msgSender(), liquidity);
         // IMPORTANT:
         // the _mint() will anyway be coded after both (TGOLD + CCIPBnM tokens) have been accepted by Exchange.sol
         // to avoid the situation when user already got the TG LP tokens before its TGOLD+CCIP_BnM tokens are accepted by Exchange.sol
-        }
         return liquidity;
         // returning uint256
    }
@@ -211,6 +206,7 @@ contract Exchange is ERC20 {
     ERC20(TGOLDTokenAddress).transfer(_msgSender(), TGOLDTokenAmount);
     //---------------------------
 
+    emit RemovedLiquidity(_amount);
     return (ethAmount, TGOLDTokenAmount);
     }
 
@@ -238,6 +234,8 @@ contract Exchange is ERC20 {
     // when we did not create a specific interface for .transfer/From() in this contract
     // and we can use ERC20 directly as we're inheriting OZ's ERC20
     ERC20(TGOLDTokenAddress).transfer(_msgSender(), tokensBought);
+
+    // emit SwappedTGOLDToCCIP_BnM(_amountTGOLD, _amountCCIP_BnM);
    }
 
    /**
@@ -273,6 +271,7 @@ contract Exchange is ERC20 {
     if (!success) {
         revert SendFailed();
     }
+    // emit SwappedCCIP_BnMToTGOLD(_amountCCIP_BnM, _amountTGOLD);
    }
 
     // ================================
@@ -293,6 +292,9 @@ contract Exchange is ERC20 {
         CCIP_BnMToken.approve(address(this), _amountCCIP_BnM);
         // avoid accessing msg.sender directly
         CCIP_BnMToken.transferFrom(_msgSender(), address(this), _amountCCIP_BnM);
+        
+        emit AddedLiquidty(_amountTGOLD, _amountCCIP_BnM);
+        return (_amountTGOLD, _amountCCIP_BnM);
      }
 
     /**
