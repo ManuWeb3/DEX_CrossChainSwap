@@ -222,7 +222,7 @@ contract Exchange is ERC20 {
     // i/p reserve is TGOLD reserve, RIGHT before we transferred TGOLD to the contract for swap
     // bcz Denominator of Golden Formlae is (x + Delta x) and 'x' is exclusive of 'Delta x' at this point
     uint256 amountCCIP_BnM = getAmountOfTokens(       // 1% swap/trade fee taken care of in this f() above
-        amountTGOLD,
+        amountTGOLD,            
         TGOLDRes,               // always TGOLD-balance SHOULD BE the one that's before amountTGOLD adds to the TGOLD's reserve
         CCIP_BnMRes             
     );
@@ -235,47 +235,42 @@ contract Exchange is ERC20 {
     // when we did not create a specific interface for .transfer/From() in this contract
     // and we can use ERC20 directly as we're inheriting OZ's ERC20
     
-    // Transfer swapped asset ONLY AFTER revert checked + TGOLD transferred
+    // Transfer swapped asset ONLY AFTER revert checked + TGOLD transferred to Exchange.sol
     IERC20(CCIP_BnMTokenAddress).transfer(_msgSender(), amountCCIP_BnM);
     // will NOT send minCCIP_BnM as this does not 'obey' the Golden Formulae and will have price impact on our reserves
     emit SwappedTGOLDToCCIP_BnM(amountTGOLD, amountCCIP_BnM);
    }
 
    /**
-    * @dev Swaps TGOLD Tokens for Eth
-    * to buy _minEth when selling _tokensSold
-    * no payable this time, ERC20 token amount will be one of the 2 parameters of this function
+    * @dev Swaps CCIP_BnM to TGOLD Tokens
+    * @param minTGOLD minimum amount of TGOLD tokens that user desires to obtain after swap
     */
 
-   // _minEth sort of expectation
-   function TGOLDTokensToEth(uint256 _tokensSold, uint256 _minEth) public {
-    //uint256 tokenReserve = getReserve();
-    uint256 ethBought = getAmountOfTokens(          // 1% swap/trade fee taken care of in this f() above
-        _tokensSold,
-        getReserveTGOLD(),               // no need to subtract any token amount as it does not gets auot-added unlike paybale-Eth
-        address(this).balance       // no "payable" this time. Hence, reserve is the same, no need to subtract msg.value
-    );
+   function swapCCIP_BnMToTGOLD(uint256 amountCCIP_BnM, uint256 minTGOLD) public {
+        // Following the Golden FROMULAE of swap (Constant Product)
+        uint256 CCIP_BnMRes = getReserveCCIP_BnM();
+        uint256 TGOLDRes = getReserveTGOLD();
 
-    if(ethBought < _minEth) {
-        revert OutputAmountInsufficient();
+        // i/p reserve is CCIP_BnM reserve, RIGHT before we transferred CCIP_BnM to the contract for swap
+        // bcz Denominator of Golden Formlae is (x + Delta x) and 'x' is exclusive of 'Delta x' at this point
+        uint256 amountTGOLD = getAmountOfTokens(       // 1% swap/trade fee taken care of in this f() above
+            amountCCIP_BnM,
+            CCIP_BnMRes,               // always TGOLD-balance SHOULD BE the one that's before amountTGOLD adds to the TGOLD's reserve
+            TGOLDRes             
+        );
+
+        if(amountTGOLD < minTGOLD) {
+            revert OutputAmountInsufficient();
+        }
+        // Transfer ERC20 amountCCIP_BnM to Exchange.sol (must already have been approved)
+        IERC20(CCIP_BnMTokenAddress).transferFrom(_msgSender(), address(this), amountCCIP_BnM);
+        // Transfer ERC20 amountTGOLD to the user
+        
+        // Transfer swapped asset ONLY AFTER revert checked + CCIP_BnM transferred to Exchange.sol
+        IERC20(TGOLDTokenAddress).transfer(_msgSender(), amountTGOLD);
+        // will NOT send minTGOLD as this does not 'obey' the Golden Formulae and will have price impact on our reserves
+        emit SwappedCCIP_BnMToTGOLD(amountCCIP_BnM, amountTGOLD);   
     }
-    // ADDITIONAL STEP OF TRANSFERFROM () IN THIS SWAP
-    // the contract should trasnferFrom() _tokensSold first from the user's balance of TG tokens
-    // to itself (basically, ERC20 mapping's updated)
-    // Post-approval, of course in JS script
-    // then, send the ethBought to the user, once all checks and balances are in place, coded above
-    // FRIST GET ERC20, THEN ONLY SEND ETH
-    ERC20(TGOLDTokenAddress).approve(address(this), _tokensSold);
-
-    ERC20(TGOLDTokenAddress).transferFrom(_msgSender(), address(this), _tokensSold);
-
-    // now, once the contract has ERC20 TG tokens, .call{EthBought}
-    (bool success, ) = _msgSender().call{value: ethBought}("");
-    if (!success) {
-        revert SendFailed();
-    }
-    // emit SwappedCCIP_BnMToTGOLD(_amountCCIP_BnM, _amountTGOLD);
-   }
 
     // ================================
     // GETTERS / Other Helper or internal functions
@@ -321,10 +316,10 @@ contract Exchange is ERC20 {
         // So by putting the values in the formulae you can get the numerator and denominator
         uint256 numerator = outputReserve * inputAmountWithFee;
         uint256 denominator = inputReserve + inputAmountWithFee;
-        console.log("inputAmount: ", inputAmount);
-        console.log("inputAmountWithFee: ", inputAmountWithFee);
-        console.log("numerator: ", numerator);
-        console.log("denominator: ", denominator);
+        // console.log("inputAmount: ", inputAmount);
+        // console.log("inputAmountWithFee: ", inputAmountWithFee);
+        // console.log("numerator: ", numerator);
+        // console.log("denominator: ", denominator);
         return numerator / denominator;
     }
    

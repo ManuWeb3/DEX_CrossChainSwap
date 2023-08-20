@@ -187,24 +187,6 @@
 				"inputs": [
 					{
 						"internalType": "uint256",
-						"name": "_tokensSold",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
-						"name": "_minEth",
-						"type": "uint256"
-					}
-				],
-				"name": "TGOLDTokensToEth",
-				"outputs": [],
-				"stateMutability": "nonpayable",
-				"type": "function"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "uint256",
 						"name": "_amountTGOLD",
 						"type": "uint256"
 					},
@@ -475,6 +457,24 @@
 				"inputs": [
 					{
 						"internalType": "uint256",
+						"name": "amountCCIP_BnM",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "minTGOLD",
+						"type": "uint256"
+					}
+				],
+				"name": "swapCCIP_BnMToTGOLD",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
 						"name": "amountTGOLD",
 						"type": "uint256"
 					},
@@ -580,9 +580,6 @@
 			},
 			"kind": "dev",
 			"methods": {
-				"TGOLDTokensToEth(uint256,uint256)": {
-					"details": "Swaps TGOLD Tokens for Eth to buy _minEth when selling _tokensSold no payable this time, ERC20 token amount will be one of the 2 parameters of this function"
-				},
 				"addLiquidity(uint256,uint256)": {
 					"details": "Adds liquidity to the exchange.",
 					"params": {
@@ -621,6 +618,12 @@
 				},
 				"removeLiquidity(uint256)": {
 					"details": "Returns the amount TGOLD/CCIP_BnM tokens that would be returned to the user in the swap of TG LP tokens for user-funds"
+				},
+				"swapCCIP_BnMToTGOLD(uint256,uint256)": {
+					"details": "Swaps CCIP_BnM to TGOLD Tokens",
+					"params": {
+						"minTGOLD": "minimum amount of TGOLD tokens that user desires to obtain after swap"
+					}
 				},
 				"swapTGOLDToCCIP_BnM(uint256,uint256)": {
 					"details": "Swaps TGOLD for CCIP_BnM",
@@ -703,11 +706,11 @@
 			]
 		},
 		"contracts/Exchange.sol": {
-			"keccak256": "0x53883f309be5cc2b35aef3a6057b5a1fccf3e0e6885012e8d5edcb6aa428fd81",
+			"keccak256": "0x95ca17ba141e1989cca8c963ce99fe2e136814089e3d57a787a0b46098fa5136",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://618d065893f571e51c4860227d2c32367d08f8d27d50cbf1622f2aed363c748b",
-				"dweb:/ipfs/QmNTALWCqQXnh4hKgp6nM3dg3pvzAnWANj8FiYJU5yJ1mN"
+				"bzz-raw://91aa17a02653dc8b4814e2897bcaa0c6eb76141a591069893c4f7487680d4767",
+				"dweb:/ipfs/Qmbi7b7E6YKwSrnwFNjZpyinymR8hsbzu1d6AxhmwNNgy2"
 			]
 		},
 		"hardhat/console.sol": {
