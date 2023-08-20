@@ -229,9 +229,13 @@ contract Exchange is ERC20 {
     if(amountCCIP_BnM < minCCIP_BnM) {
         revert OutputAmountInsufficient();
     }
+    // Transfer ERC20 amountTGOLD to Exchange.sol (must already have been approved)
+    IERC20(TGOLDTokenAddress).transferFrom(_msgSender(), address(this), amountTGOLD);
     // Transfer ERC20 amountCCIP_BnM to the user
     // when we did not create a specific interface for .transfer/From() in this contract
     // and we can use ERC20 directly as we're inheriting OZ's ERC20
+    
+    // Transfer swapped asset ONLY AFTER revert checked + TGOLD transferred
     IERC20(CCIP_BnMTokenAddress).transfer(_msgSender(), amountCCIP_BnM);
     // will NOT send minCCIP_BnM as this does not 'obey' the Golden Formulae and will have price impact on our reserves
     emit SwappedTGOLDToCCIP_BnM(amountTGOLD, amountCCIP_BnM);
@@ -317,7 +321,10 @@ contract Exchange is ERC20 {
         // So by putting the values in the formulae you can get the numerator and denominator
         uint256 numerator = outputReserve * inputAmountWithFee;
         uint256 denominator = inputReserve + inputAmountWithFee;
-
+        console.log("inputAmount: ", inputAmount);
+        console.log("inputAmountWithFee: ", inputAmountWithFee);
+        console.log("numerator: ", numerator);
+        console.log("denominator: ", denominator);
         return numerator / denominator;
     }
    
@@ -333,14 +340,14 @@ contract Exchange is ERC20 {
     * @dev Returns the amount of `TGOLD Tokens` held by the Exchange.sol contract (not user)
     */
     function getReserveTGOLD() public view returns (uint256) {
-        return ERC20(TGOLDTokenAddress).balanceOf(address(this));   // convention - IERC20(address).balaOf(address)
+        return IERC20(TGOLDTokenAddress).balanceOf(address(this));   // convention - IERC20(address).balaOf(address)
     }
 
     /**
     * @dev Returns the amount of `CCIP_BnM Tokens` held by the Exchange.sol contract (not user)
     */
     function getReserveCCIP_BnM() public view returns (uint256) {
-        return ERC20(CCIP_BnMTokenAddress).balanceOf(address(this));   // convention - IERC20(address).balaOf(address)
+        return IERC20(CCIP_BnMTokenAddress).balanceOf(address(this));   // convention - IERC20(address).balaOf(address)
     }
 }
 
