@@ -18,11 +18,11 @@ contract Exchange is ERC20 {
     error AddressZeroError();
     error InsufficientERC20Input();
     error InvalidReserveQuantity();
-    error InputAmountNotGreaterThanZero();
-    error OutputAmountLessThanMinimumAmount();
+    error InvalidInputAmount();
+    error OutputAmountInsufficient();
 
     event AddedLiquidty(uint256 _amountTGOLD, uint256 _amountCCIP_BnM); // default ERC20 events not that discrete
-    event RemovedLiquidity(uint256 _amountTGLP);                        // default ERC20 events not that discrete
+    event RemovedLiquidity(uint256 _amountTGLP, uint256 _amountTGOLD, uint256 _amountCCIP_BnM);                        // default ERC20 events not that discrete
     event SwappedTGOLDToCCIP_BnM(uint256 _amountTGOLD, uint256 _amountCCIP_BnM);
     event SwappedCCIP_BnMToTGOLD(uint256 _amountTGOLD, uint256 _amountCCIP_BnM);
 
@@ -161,86 +161,80 @@ contract Exchange is ERC20 {
     * @dev Returns the amount TGOLD/CCIP_BnM tokens that would be returned to the user
     * in the swap of TG LP tokens for user-funds
     */
-   function removeLiquidity(uint _amountTGLP) public returns (uint , uint) {
+   function removeLiquidity(uint256 _amountTGLP) public returns (uint256 , uint256) {
     if(_amountTGLP <= 0) {
-        revert InputAmountNotGreaterThanZero();
+        revert InvalidInputAmount();
     }
 
-    uint ethReserve = address(this).balance;        // current ETH reserve
-    uint _totalSupply = totalSupply();              // current TG LP tokens reserve
-    // The amount of Eth that would be sent back to the user is based
+    uint256 TGOLDRes = getReserveTGOLD();                   // current TG reserve
+    uint256 CCIP_BnMRes = getReserveCCIP_BnM();             // current CCIP_BnM reserve
+    uint256 _totalSupplyTGLP = totalSupply();               // current TG LP tokens reserve
+    // The amount of TGOLD that would be sent back to the user is based
+    // on the same GOLDEN ratio:
+    // Ratio is -> (TGOLD to be sent back to the user) / (current TGOLD reserve)
+    // = (amount of TGLP tokens that user wants to redeem) / (total supply of TGLP tokens)
+    // Then by same maths -> (TGOLD sent back to the user)
+    // = (current TGOLD reserve * amount of TGLP tokens that user wants to redeem) / (total supply of TGLP tokens)
+    uint256 TGOLDWithdrawn = (TGOLDRes * _amountTGLP) / _totalSupplyTGLP;      // formulae # 1, TGOLD determined, later transfer
+    // The amount of CCIP_BnM token that would be sent back to the user is based
     // on a ratio
-    // Ratio is -> (Eth sent back to the user) / (current Eth reserve)
-    // = (amount of LP tokens that user wants to withdraw) / (total supply of LP tokens)
-    // Then by same maths -> (Eth sent back to the user)
-    // = (current Eth reserve * amount of LP tokens that user wants to withdraw) / (total supply of LP tokens)
-    uint ethAmount = (ethReserve * _amountTGLP)/ _totalSupply;      // formulae # 1, ETH determined, later transfer
-    // The amount of TGOLD token that would be sent back to the user is based
-    // on a ratio
-    // Ratio is -> (TGOLD sent back to the user) / (current TGOLD token reserve)
-    // = (amount of LP tokens that user wants to withdraw) / (total supply of LP tokens)
-    // Then by some maths -> (TGOLD sent back to the user)
-    // = (current TGOLD token reserve * amount of LP tokens that user wants to withdraw) / (total supply of LP tokens)
-    uint TGOLDTokenAmount = (getReserveTGOLD() * _amountTGLP)/ _totalSupply;     // formulae # 2, TGOLDTokenAmount determined, later transfer
+    // Ratio is -> (CCIP_BnM to be sent back to the user) / (current CCIP_BnM token reserve)
+    // = (amount of TGLP tokens that user wants to redeem) / (total supply of TGLP tokens)
+    uint256 CCIP_BnMWithdrawn = (CCIP_BnMRes * _amountTGLP) / _totalSupplyTGLP;     // formulae # 2, CCIP_BnM determined, later transfer
     
-    // Burn the sent LP tokens from the user's wallet because they are already sent to
+    // Burn the sent TGLP tokens from the user's wallet because they are already sent to
     // remove liquidity
     
     // IMPORTANT:
-    // first _burn(), then .call{}() and .transfer() TG Tokens
+    // first _burn(), then .transfer() both ERC20 Tokens
     // first set the state, then transfer funds, per RE-ENTRANCY
     _burn(_msgSender(), _amountTGLP);         // burn(), as opposed to _mint()
     // _burn() applies only to TGLP token contract
 
     //---------------------------
-    // TRANSFER # 1: (ETH != ERC20 token, hence .call{}() used)
-    // Transfer `ethAmount` of Eth from the contract to the user's wallet
-    // instead, use userAddress.call{}("")
-    
-    (bool success, ) = _msgSender().call{value: ethAmount}("");       // instead of payable(_msgSender()).transfer(ethAmount);
-    if (!success) {
-        revert SendFailed();
-    }
+    // TRANSFER # 1: (ERC20 token != ETH, hence, use transfer(), not .call{}())
+    // Transfer `TGOLD` from Exchange.sol to the user's wallet
+    IERC20(TGOLDTokenAddress).transfer(_msgSender(), TGOLDWithdrawn);
 
-    // TRANSFER # 2: (ERC20 token != ETH, hence, use a f() of ERC20 token std.)
-    // Transfer `TGOLDTokenAmount` of TGOLD tokens from the contract to the user's wallet
-    // .transfer's _msgSender() is the contract itself (sender/from)
+    // TRANSFER # 2: 
+    // Transfer `CCIP_BnM` from Exchange.sol to the user's wallet
+    // .transfer's _msgSender() is the contract itself (sender/from) - calling external contract
     // "_msgSender()" below is the user/to who invoked the f() removeLiq()
     
     // that's how we coded to send ERC20 tokens from inside a contract to an EOA
-    ERC20(TGOLDTokenAddress).transfer(_msgSender(), TGOLDTokenAmount);
+    IERC20(CCIP_BnMTokenAddress).transfer(_msgSender(), CCIP_BnMWithdrawn);
     //---------------------------
 
-    emit RemovedLiquidity(_amount);
-    return (ethAmount, TGOLDTokenAmount);
+    emit RemovedLiquidity(_amountTGLP, TGOLDWithdrawn, CCIP_BnMWithdrawn);
+    return (TGOLDWithdrawn, CCIP_BnMWithdrawn);
     }
 
     /**
-    * @dev Swaps Eth for TGOLD Tokens
-    * payable bcz we're accepting Ether in the contract for swapping with TG Tokens
-    * to buy _minTokens when selling (payable) Eth
+    * @dev Swaps TGOLD for CCIP_BnM
+    * @param minCCIP_BnM minimum amount of CCIP_BnM tokens that user desires to obtain after swap
     */
 
    // _minTokens sort of expectation, is what user wants / expects
-   function ethToTGOLDTokens(uint256 _minTokens) public payable {
-    uint256 tokenReserve = getReserveTGOLD();
-    // i/p reserve is Eth reserve, RIGHT before we transferred Eth to the contract for swap
-    // bcz it's (x + Delta x) and 'x' is exclusive of 'Delta x' at this point
-    // hence, (available balance - msg.value)
-    uint256 tokensBought = getAmountOfTokens(       // 1% swap/trade fee taken care of in this f() above
-        msg.value,
-        address(this).balance - msg.value,          // always Eth-balance SHOULD BE the one that's before msg.value adds to the EthReserve
-        tokenReserve            // no input of TG Tokens, hence getReserve() already returns amount of TG Tokens without any new input considered
+   function swapTGOLDToCCIP_BnM(uint256 amountTGOLD, uint256 minCCIP_BnM) public {
+    // Following the Golden FROMULAE of swap (Constant Product)
+    uint256 CCIP_BnMRes = getReserveCCIP_BnM();
+    uint256 TGOLDRes = getReserveTGOLD();
+    // i/p reserve is TGOLD reserve, RIGHT before we transferred TGOLD to the contract for swap
+    // bcz Denominator of Golden Formlae is (x + Delta x) and 'x' is exclusive of 'Delta x' at this point
+    uint256 amountCCIP_BnM = getAmountOfTokens(       // 1% swap/trade fee taken care of in this f() above
+        amountTGOLD,
+        TGOLDRes,               // always TGOLD-balance SHOULD BE the one that's before amountTGOLD adds to the TGOLD's reserve
+        CCIP_BnMRes             
     );
-    if(tokensBought < _minTokens) {
-        revert OutputAmountLessThanMinimumAmount();
+    if(amountCCIP_BnM < minCCIP_BnM) {
+        revert OutputAmountInsufficient();
     }
-    // Transfer ERC20 tokensBought to the user
+    // Transfer ERC20 amountCCIP_BnM to the user
     // when we did not create a specific interface for .transfer/From() in this contract
     // and we can use ERC20 directly as we're inheriting OZ's ERC20
-    ERC20(TGOLDTokenAddress).transfer(_msgSender(), tokensBought);
-
-    // emit SwappedTGOLDToCCIP_BnM(_amountTGOLD, _amountCCIP_BnM);
+    IERC20(CCIP_BnMTokenAddress).transfer(_msgSender(), amountCCIP_BnM);
+    // will NOT send minCCIP_BnM as this does not 'obey' the Golden Formulae and will have price impact on our reserves
+    emit SwappedTGOLDToCCIP_BnM(amountTGOLD, amountCCIP_BnM);
    }
 
    /**
@@ -259,7 +253,7 @@ contract Exchange is ERC20 {
     );
 
     if(ethBought < _minEth) {
-        revert OutputAmountLessThanMinimumAmount();
+        revert OutputAmountInsufficient();
     }
     // ADDITIONAL STEP OF TRANSFERFROM () IN THIS SWAP
     // the contract should trasnferFrom() _tokensSold first from the user's balance of TG tokens

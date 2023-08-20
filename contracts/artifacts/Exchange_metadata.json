@@ -28,12 +28,12 @@
 			},
 			{
 				"inputs": [],
-				"name": "InputAmountNotGreaterThanZero",
+				"name": "InsufficientERC20Input",
 				"type": "error"
 			},
 			{
 				"inputs": [],
-				"name": "InsufficientERC20Input",
+				"name": "InvalidInputAmount",
 				"type": "error"
 			},
 			{
@@ -43,7 +43,7 @@
 			},
 			{
 				"inputs": [],
-				"name": "OutputAmountLessThanMinimumAmount",
+				"name": "OutputAmountInsufficient",
 				"type": "error"
 			},
 			{
@@ -102,6 +102,18 @@
 						"indexed": false,
 						"internalType": "uint256",
 						"name": "_amountTGLP",
+						"type": "uint256"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "_amountTGOLD",
+						"type": "uint256"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "_amountCCIP_BnM",
 						"type": "uint256"
 					}
 				],
@@ -321,19 +333,6 @@
 				"inputs": [
 					{
 						"internalType": "uint256",
-						"name": "_minTokens",
-						"type": "uint256"
-					}
-				],
-				"name": "ethToTGOLDTokens",
-				"outputs": [],
-				"stateMutability": "payable",
-				"type": "function"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "uint256",
 						"name": "inputAmount",
 						"type": "uint256"
 					},
@@ -452,7 +451,7 @@
 				"inputs": [
 					{
 						"internalType": "uint256",
-						"name": "_amount",
+						"name": "_amountTGLP",
 						"type": "uint256"
 					}
 				],
@@ -469,6 +468,24 @@
 						"type": "uint256"
 					}
 				],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "amountTGOLD",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "minCCIP_BnM",
+						"type": "uint256"
+					}
+				],
+				"name": "swapTGOLDToCCIP_BnM",
+				"outputs": [],
 				"stateMutability": "nonpayable",
 				"type": "function"
 			},
@@ -587,9 +604,6 @@
 				"decreaseAllowance(address,uint256)": {
 					"details": "Atomically decreases the allowance granted to `spender` by the caller. This is an alternative to {approve} that can be used as a mitigation for problems described in {IERC20-approve}. Emits an {Approval} event indicating the updated allowance. Requirements: - `spender` cannot be the zero address. - `spender` must have allowance for the caller of at least `subtractedValue`."
 				},
-				"ethToTGOLDTokens(uint256)": {
-					"details": "Swaps Eth for TGOLD Tokens payable bcz we're accepting Ether in the contract for swapping with TG Tokens to buy _minTokens when selling (payable) Eth"
-				},
 				"getAmountOfTokens(uint256,uint256,uint256)": {
 					"details": "returns the amount of Eth/TG tokens that are required to be returned to the user/trader upon swap"
 				},
@@ -607,6 +621,12 @@
 				},
 				"removeLiquidity(uint256)": {
 					"details": "Returns the amount TGOLD/CCIP_BnM tokens that would be returned to the user in the swap of TG LP tokens for user-funds"
+				},
+				"swapTGOLDToCCIP_BnM(uint256,uint256)": {
+					"details": "Swaps TGOLD for CCIP_BnM",
+					"params": {
+						"minCCIP_BnM": "minimum amount of CCIP_BnM tokens that user desires to obtain after swap"
+					}
 				},
 				"symbol()": {
 					"details": "Returns the symbol of the token, usually a shorter version of the name."
@@ -683,11 +703,11 @@
 			]
 		},
 		"contracts/Exchange.sol": {
-			"keccak256": "0x6bf1664772e64aab5d1a5c3bbb6afa53e7c38f17f2149e37f1c40fa69d0e9102",
+			"keccak256": "0x366782fd4cd6443137050daa3d7dac029538895360708560f53959c1f93da6d8",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://8cdee49390aa1ebb5e76da9333388d0c0d206ccc55d5134ead5f151aa8638b06",
-				"dweb:/ipfs/QmNSPgbkGJ4Ee7vVVa8VAmp1X2n9ymbt9hYFEANxaR1XUV"
+				"bzz-raw://78a7734bab382e21c36b9cd3485e85e03c3519f31c92732c0346ee182b2c42ff",
+				"dweb:/ipfs/QmUD6kCT7o7Nomp8QaTZvqim5brV256JFwj6teCQ3Cv7Hk"
 			]
 		},
 		"hardhat/console.sol": {
