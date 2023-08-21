@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.4;
+pragma solidity ^0.8.19;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "hardhat/console.sol";
+import "./ProgrammableTokenTransfers.sol";
 
 /**
 @title
@@ -12,7 +13,7 @@ import "hardhat/console.sol";
 
 /// All the frontend scripts also get changed with the new token-pair here
 
-contract Exchange is ERC20 {
+contract Exchange is ERC20, ProgrammableTokenTransfers {
 
     error SendFailed();
     error AddressZeroError();
@@ -31,7 +32,11 @@ contract Exchange is ERC20 {
     address private CCIP_BnMTokenAddress;
 
     // Both TGOLD and CCIP_BnM must already be deployed, pass their addresses
-    constructor (address _TGOLDToken, address _CCIP_BnMTokenAddress) ERC20 ("TGOLD LP Token", "TGLP") {
+    constructor (address _TGOLDToken, address _CCIP_BnMTokenAddress, address _router, address _link) 
+    ERC20 ("TGOLD LP Token", "TGLP") 
+    ProgrammableTokenTransfers(_router, _link)
+    CCIPReceiver(_router)
+    {
         if(_TGOLDToken == address(0) || _CCIP_BnMTokenAddress == address(0)) {
             revert AddressZeroError();
         }

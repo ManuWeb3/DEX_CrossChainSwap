@@ -72,7 +72,7 @@ contract ProgrammableTokenTransfers is CCIPReceiver, OwnerIsCreator {   // "Prog
     LinkTokenInterface linkToken;
 
     /// @notice Constructor initializes the contract with the router address.
-    /// @param _router The address of the router contract. (on Source B/c)
+    /// @param _router The address of the router contract. (on Source B/c). To be further passed to CCIPReceiver.sol
     /// @param _link The address of the link contract. (on Source B/c)
     constructor(address _router, address _link) CCIPReceiver(_router) {
         linkToken = LinkTokenInterface(_link);

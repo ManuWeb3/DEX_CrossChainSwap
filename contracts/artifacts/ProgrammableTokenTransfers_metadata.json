@@ -649,7 +649,7 @@
 				"constructor": {
 					"params": {
 						"_link": "The address of the link contract. (on Source B/c)",
-						"_router": "The address of the router contract. (on Source B/c)"
+						"_router": "The address of the router contract. (on Source B/c). To be further passed to CCIPReceiver.sol"
 					}
 				},
 				"denySender(address)": {
@@ -919,11 +919,11 @@
 			]
 		},
 		"contracts/ProgrammableTokenTransfers .sol": {
-			"keccak256": "0x2f3554b47901bf4c6dd94c53e66b5e39f3cc76855f5ddc79de624208336716a2",
+			"keccak256": "0xe88cd9ed88a06140eead274c098aa9993ccb4fb58a87e091610f9c09a1fea83e",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://5d3d829e1059f183ffc509e0e505f9797d235d1ccecb9939d9fc7142d6a3e368",
-				"dweb:/ipfs/QmaE511DXj7kQc9KBCPmQRkCsFSBPAbJRxMN7PWvX3ASJa"
+				"bzz-raw://a6bf11e543fb016bbc9823332eb993a6a0d81a59e762c98a455c24634d04051b",
+				"dweb:/ipfs/QmTAi8YHuFkZL9MrqgUhrxyGku2zw8YrqBtzBvM3sr6W3t"
 			]
 		}
 	},
