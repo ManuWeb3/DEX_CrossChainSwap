@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol"; // to avoid "DeclarationError: Identifier already declared"
+// import "@chainlink/contracts-ccip/src/v0.8/vendor/openzeppelin-solidity/v4.8.0/token/ERC20/ERC20.sol";
 import "hardhat/console.sol";
 import "./ProgrammableTokenTransfers.sol";
 
@@ -35,7 +36,7 @@ contract Exchange is ERC20, ProgrammableTokenTransfers {
     constructor (address _TGOLDToken, address _CCIP_BnMTokenAddress, address _router, address _link) 
     ERC20 ("TGOLD LP Token", "TGLP") 
     ProgrammableTokenTransfers(_router, _link)
-    CCIPReceiver(_router)
+    // CCIPReceiver(_router)
     {
         if(_TGOLDToken == address(0) || _CCIP_BnMTokenAddress == address(0)) {
             revert AddressZeroError();
@@ -216,11 +217,10 @@ contract Exchange is ERC20, ProgrammableTokenTransfers {
 
     /**
     * @dev Swaps TGOLD for CCIP_BnM
-    * @param minCCIP_BnM minimum amount of CCIP_BnM tokens that user desires to obtain after swap
     */
 
    // _minTokens sort of expectation, is what user wants / expects
-   function swapTGOLDToCCIP_BnM(uint256 amountTGOLD, uint256 minCCIP_BnM) public {
+   function swapTGOLDToCCIP_BnM(uint256 amountTGOLD/*=====, uint256 minCCIP_BnM*/) public {
     // Following the Golden FROMULAE of swap (Constant Product)
     uint256 CCIP_BnMRes = getReserveCCIP_BnM();
     uint256 TGOLDRes = getReserveTGOLD();
@@ -231,9 +231,9 @@ contract Exchange is ERC20, ProgrammableTokenTransfers {
         TGOLDRes,               // always TGOLD-balance SHOULD BE the one that's before amountTGOLD adds to the TGOLD's reserve
         CCIP_BnMRes             
     );
-    if(amountCCIP_BnM < minCCIP_BnM) {
+    /* ===== if(amountCCIP_BnM < minCCIP_BnM) {
         revert OutputAmountInsufficient();
-    }
+    }*/
     // Transfer ERC20 amountTGOLD to Exchange.sol (must already have been approved)
     IERC20(TGOLDTokenAddress).transferFrom(_msgSender(), address(this), amountTGOLD);
     // Transfer ERC20 amountCCIP_BnM to the user
@@ -241,8 +241,20 @@ contract Exchange is ERC20, ProgrammableTokenTransfers {
     // and we can use ERC20 directly as we're inheriting OZ's ERC20
     
     // Transfer swapped asset ONLY AFTER revert checked + TGOLD transferred to Exchange.sol
-    IERC20(CCIP_BnMTokenAddress).transfer(_msgSender(), amountCCIP_BnM);
+    //===== IERC20(CCIP_BnMTokenAddress).transfer(_msgSender(), amountCCIP_BnM);
     // will NOT send minCCIP_BnM as this does not 'obey' the Golden Formulae and will have price impact on our reserves
+
+    // Include PTT.sol to send CCIP_BnM across
+    uint64 destChainSelector = 12532609583862916517;
+    address addressPolygonExchange = 0xf2F63Ba6C0DFE0E7D3639ce099347ad96DDf973f;
+    string memory text = "Sending CCIP_BnM across";
+    address addressCCIP_BnMSepolia = 0xFd57b4ddBf88a4e07fF4e34C487b99af2Fe82a05;
+    
+    this.sendMessagePayLINK(destChainSelector, addressPolygonExchange, text, addressCCIP_BnMSepolia, amountCCIP_BnM);
+    // ".this" mimics an external call to PTT.sol's f()
+    // ".this" bcz sendMessagePayLINK is an external fn() of PTT.sol
+    // will be inherited (bcz not private) but cannot be called internally without .this
+    // also, using .this did away with the error reg. memory -> calldata "text": f() param
     emit SwappedTGOLDToCCIP_BnM(amountTGOLD, amountCCIP_BnM);
    }
 
@@ -300,7 +312,7 @@ contract Exchange is ERC20, ProgrammableTokenTransfers {
      }
 
     /**
-     * @dev returns the amount of Eth/TG tokens that are required to be returned to the user/trader upon swap
+     * @dev returns the amount of TG/CCIP_BnM tokens that are required to be returned to the user/trader upon swap
      */
     function getAmountOfTokens(
     uint256 inputAmount, 
@@ -312,15 +324,17 @@ contract Exchange is ERC20, ProgrammableTokenTransfers {
         }
         // We are charging a fee of `1%`
         // Input amount with fee = (input amount - (1*(input amount)/100)) = ((input amount)*99)/100
-        uint256 inputAmountWithFee = (inputAmount*99)/100;
+        // ===== uint256 inputAmountWithFee = (inputAmount*99)/100;
         // Because we need to follow the concept of `XY = K` curve
         // We need to make sure (x + Δx) * (y - Δy) = x * y
         // So the final formula is Δy = (y * Δx) / (x + Δx)
         // Δy in our case is `tokens to be received`
         // Δx = ((input amount)*99)/100, x = inputReserve, y = outputReserve
         // So by putting the values in the formulae you can get the numerator and denominator
-        uint256 numerator = outputReserve * inputAmountWithFee;
-        uint256 denominator = inputReserve + inputAmountWithFee;
+        // =====uint256 numerator = outputReserve * inputAmountWithFee;
+        // =====uint256 denominator = inputReserve + inputAmountWithFee;
+        uint256 numerator = outputReserve * inputAmount;
+        uint256 denominator = inputReserve + inputAmount;
         // console.log("inputAmount: ", inputAmount);
         // console.log("inputAmountWithFee: ", inputAmountWithFee);
         // console.log("numerator: ", numerator);
@@ -351,3 +365,24 @@ contract Exchange is ERC20, ProgrammableTokenTransfers {
     }
 }
 
+
+/* Deployment values:
+Sepolia Router = 0xD0daae2231E9CB96b94C8512223533293C3693Bf
+Sepolia Link = 0x779877A7B0D9E8603169DdbD7836e478b4624789
+Sepolia TGOLD = 0xd7C126692107D0B89C4613aE3bEf2CEddFFd521C
+Sepolia CCIP_BnM = 0xFd57b4ddBf88a4e07fF4e34C487b99af2Fe82a05
+Sepolia Exchange.sol = 0x4392dba791c32858e76fef7800c0508648217f62
+Sepolia Chain Selector = 16015286601757825753
+
+Mumbai Exchange.sol = 0xf2F63Ba6C0DFE0E7D3639ce099347ad96DDf973f
+Mumbai TGOLD = 0xe0ac96459c159bd3fa591241be5b0c1ff7f43d71
+Mumbai CCIP_BnM = 0xf1E3A5842EeEF51F2967b3F05D45DD4f4205FF40
+Mumbai Router = 0x70499c328e1E2a3c41108bd3730F6670a44595D1
+Mumbai LINK = 0x326C977E6efc84E512bB9C30f76E30c160eD06FB
+Mumabi Chain Selector = 12532609583862916517
+
+Runs: CCIP Explorer - MessageIDs
+1. 0x10be098cf7fa093842a2e3e84f238fa2fae1c773ca3507d96b970ae8cfaebb77
+2. 
+
+*/

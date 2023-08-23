@@ -8,22 +8,6 @@
 			{
 				"inputs": [
 					{
-						"internalType": "address",
-						"name": "_router",
-						"type": "address"
-					},
-					{
-						"internalType": "address",
-						"name": "_link",
-						"type": "address"
-					}
-				],
-				"stateMutability": "nonpayable",
-				"type": "constructor"
-			},
-			{
-				"inputs": [
-					{
 						"internalType": "uint64",
 						"name": "destinationChainSelector",
 						"type": "uint64"
@@ -816,7 +800,7 @@
 	},
 	"settings": {
 		"compilationTarget": {
-			"contracts/ProgrammableTokenTransfers .sol": "ProgrammableTokenTransfers"
+			"contracts/ProgrammableTokenTransfers.sol": "ProgrammableTokenTransfers"
 		},
 		"evmVersion": "paris",
 		"libraries": {},
@@ -894,14 +878,6 @@
 				"dweb:/ipfs/QmdehywxLNrSnNAfrfUqoQr1jPrGX2sBnCQ2wdZAZLx5eB"
 			]
 		},
-		"@chainlink/contracts-ccip/src/v0.8/vendor/openzeppelin-solidity/v4.8.0/token/ERC20/IERC20.sol": {
-			"keccak256": "0xf7a52b7d3a7b79117544d6bbeb8564bd22c760c4937d69914b99641a957a8f2a",
-			"license": "MIT",
-			"urls": [
-				"bzz-raw://2b5afd167693d0e80d30d0f50b718b5df237c97d721383b97154049cabab1128",
-				"dweb:/ipfs/QmZpVB96pJpaJmmnqB1RC3qSZk8upgLL22YZtq97JzpK5H"
-			]
-		},
 		"@chainlink/contracts-ccip/src/v0.8/vendor/openzeppelin-solidity/v4.8.0/utils/introspection/IERC165.sol": {
 			"keccak256": "0xac7a4bfe791ee9fe125cac5cd25795b326433e5cf2bdd6b02ad6ad42c2d126a5",
 			"license": "MIT",
@@ -918,12 +894,20 @@
 				"dweb:/ipfs/QmcQHK6ewve7tFi4XXK65JthQg4kQzApQikWcURJjGt4iQ"
 			]
 		},
-		"contracts/ProgrammableTokenTransfers .sol": {
-			"keccak256": "0xe88cd9ed88a06140eead274c098aa9993ccb4fb58a87e091610f9c09a1fea83e",
+		"@openzeppelin/contracts/token/ERC20/IERC20.sol": {
+			"keccak256": "0x287b55befed2961a7eabd7d7b1b2839cbca8a5b80ef8dcbb25ed3d4c2002c305",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://a6bf11e543fb016bbc9823332eb993a6a0d81a59e762c98a455c24634d04051b",
-				"dweb:/ipfs/QmTAi8YHuFkZL9MrqgUhrxyGku2zw8YrqBtzBvM3sr6W3t"
+				"bzz-raw://bd39944e8fc06be6dbe2dd1d8449b5336e23c6a7ba3e8e9ae5ae0f37f35283f5",
+				"dweb:/ipfs/QmPV3FGYjVwvKSgAXKUN3r9T9GwniZz83CxBpM7vyj2G53"
+			]
+		},
+		"contracts/ProgrammableTokenTransfers.sol": {
+			"keccak256": "0xd087ee89ac773bca15b29309e3e9758d17645baa0d2e514f4461bf53f276dce6",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://5f4be7c90602e5751e66abfb8526b9d174a910644366e7470ba4ef24309fe364",
+				"dweb:/ipfs/QmWzqkS22Ug5P9LoQszsZkU15gYtyzg3PQsnHHCFTFTGFF"
 			]
 		}
 	},
