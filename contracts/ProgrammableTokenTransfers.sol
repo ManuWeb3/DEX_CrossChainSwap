@@ -1,12 +1,18 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.19;
 
+// Optional: If this contract wants to send
 import {IRouterClient} from "@chainlink/contracts-ccip/src/v0.8/ccip/interfaces/IRouterClient.sol";     // router client (Sender)
+// MUST
 import {OwnerIsCreator} from "@chainlink/contracts-ccip/src/v0.8/shared/access/OwnerIsCreator.sol";     // onlyOwner modifier
+// MUST
 import {Client} from "@chainlink/contracts-ccip/src/v0.8/ccip/libraries/Client.sol";                    // all 3 structs
+// Optional: if this contract should RECEIVE
 import {CCIPReceiver} from "@chainlink/contracts-ccip/src/v0.8/ccip/applications/CCIPReceiver.sol";     // NEW - ccipReceiver() (like ccipsend in Router)
+// Optional: if Token transfer / fee payment in LINK
 // import {IERC20} from "@chainlink/contracts-ccip/src/v0.8/vendor/openzeppelin-solidity/v4.8.0/token/ERC20/IERC20.sol";   // CCIP-BnM
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";    // to avoid "DeclarationError: Identifier already declared"
+// Optional: only if fee payment in LINK
 import {LinkTokenInterface} from "@chainlink/contracts/src/v0.8/interfaces/LinkTokenInterface.sol";     // to pay fee in LINK (1/2 options)
 // built-in by Chainlink already
 
@@ -15,6 +21,8 @@ import {LinkTokenInterface} from "@chainlink/contracts/src/v0.8/interfaces/LinkT
  * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE.
  * DO NOT USE THIS CODE IN PRODUCTION.
  */
+
+// Not always would you want to have PTT, solely depends upon the use case
 
 /// @title - A simple messenger contract for transferring/receiving tokens and data across chains.
 abstract contract ProgrammableTokenTransfers is CCIPReceiver, OwnerIsCreator {   // "Programmable" due to presence of Receiver contract (coding involved)

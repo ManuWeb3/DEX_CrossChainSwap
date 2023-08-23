@@ -2,9 +2,10 @@
 pragma solidity ^0.8.19;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol"; // to avoid "DeclarationError: Identifier already declared"
-// import "@chainlink/contracts-ccip/src/v0.8/vendor/openzeppelin-solidity/v4.8.0/token/ERC20/ERC20.sol";
 import "hardhat/console.sol";
-import "./ProgrammableTokenTransfers.sol";
+import {CCIPReceiver} from "@chainlink/contracts-ccip/src/v0.8/ccip/applications/CCIPReceiver.sol";     // NEW - ccipReceiver() (like ccipsend in Router)
+import {OwnerIsCreator} from "@chainlink/contracts-ccip/src/v0.8/shared/access/OwnerIsCreator.sol";     // onlyOwner modifier
+import {Client} from "@chainlink/contracts-ccip/src/v0.8/ccip/libraries/Client.sol";                    // all 3 structs
 
 /**
 @title
@@ -14,7 +15,7 @@ import "./ProgrammableTokenTransfers.sol";
 
 /// All the frontend scripts also get changed with the new token-pair here
 
-contract Exchange is ERC20, ProgrammableTokenTransfers {
+contract Exchange is ERC20, CCIPReceiver, OwnerIsCreator {
 
     error SendFailed();
     error AddressZeroError();
@@ -22,11 +23,13 @@ contract Exchange is ERC20, ProgrammableTokenTransfers {
     error InvalidReserveQuantity();
     error InvalidInputAmount();
     error OutputAmountInsufficient();
-
+    
     event AddedLiquidty(uint256 _amountTGOLD, uint256 _amountCCIP_BnM); // default ERC20 events not that discrete
     event RemovedLiquidity(uint256 _amountTGLP, uint256 _amountTGOLD, uint256 _amountCCIP_BnM);                        // default ERC20 events not that discrete
     event SwappedTGOLDToCCIP_BnM(uint256 _amountTGOLD, uint256 _amountCCIP_BnM);
     event SwappedCCIP_BnMToTGOLD(uint256 _amountTGOLD, uint256 _amountCCIP_BnM);
+    event MessageSent(bytes32 messageId);   // standard type for a msgId returned by router.ccipSend()
+    event MessageReceived(bytes32 messageId);
 
     // ERC20 is inherited as TGLP, TG, CCIP_BnM tokens are ERC20 ones
     address private TGOLDTokenAddress;
@@ -35,8 +38,7 @@ contract Exchange is ERC20, ProgrammableTokenTransfers {
     // Both TGOLD and CCIP_BnM must already be deployed, pass their addresses
     constructor (address _TGOLDToken, address _CCIP_BnMTokenAddress, address _router, address _link) 
     ERC20 ("TGOLD LP Token", "TGLP") 
-    ProgrammableTokenTransfers(_router, _link)
-    // CCIPReceiver(_router)
+    CCIPReceiver(_router)
     {
         if(_TGOLDToken == address(0) || _CCIP_BnMTokenAddress == address(0)) {
             revert AddressZeroError();
@@ -245,12 +247,16 @@ contract Exchange is ERC20, ProgrammableTokenTransfers {
     // will NOT send minCCIP_BnM as this does not 'obey' the Golden Formulae and will have price impact on our reserves
 
     // Include PTT.sol to send CCIP_BnM across
+    
+    /**
     uint64 destChainSelector = 12532609583862916517;
     address addressPolygonExchange = 0xf2F63Ba6C0DFE0E7D3639ce099347ad96DDf973f;
     string memory text = "Sending CCIP_BnM across";
     address addressCCIP_BnMSepolia = 0xFd57b4ddBf88a4e07fF4e34C487b99af2Fe82a05;
     
     this.sendMessagePayLINK(destChainSelector, addressPolygonExchange, text, addressCCIP_BnMSepolia, amountCCIP_BnM);
+    */
+
     // ".this" mimics an external call to PTT.sol's f()
     // ".this" bcz sendMessagePayLINK is an external fn() of PTT.sol
     // will be inherited (bcz not private) but cannot be called internally without .this
@@ -289,6 +295,10 @@ contract Exchange is ERC20, ProgrammableTokenTransfers {
         emit SwappedCCIP_BnMToTGOLD(amountCCIP_BnM, amountTGOLD);   
     }
 
+    // whitelisting features missing here
+    function _ccipReceive(Client.Any2EVMMessage memory message) internal override {
+
+    }
     // ================================
     // GETTERS / Other Helper or internal functions
 

@@ -903,11 +903,11 @@
 			]
 		},
 		"contracts/ProgrammableTokenTransfers.sol": {
-			"keccak256": "0xd087ee89ac773bca15b29309e3e9758d17645baa0d2e514f4461bf53f276dce6",
+			"keccak256": "0x9341f8640c090087ad471435574e914af80e6dfcf4b75e19bb1598f14ad8e900",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://5f4be7c90602e5751e66abfb8526b9d174a910644366e7470ba4ef24309fe364",
-				"dweb:/ipfs/QmWzqkS22Ug5P9LoQszsZkU15gYtyzg3PQsnHHCFTFTGFF"
+				"bzz-raw://8239ab5b48ce96347ef450f7b3d4779c09eb4397ae1584c5ed64d6f79119c796",
+				"dweb:/ipfs/QmapRDMDzUcssviKsSPFBtTcLwXjjFmSk1YQZd1wNFgnhF"
 			]
 		}
 	},

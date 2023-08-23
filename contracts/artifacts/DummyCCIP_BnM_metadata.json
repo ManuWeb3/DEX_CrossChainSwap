@@ -383,11 +383,11 @@
 			]
 		},
 		"contracts/DummyCCIP_BnM.sol": {
-			"keccak256": "0x38eeca4b6e490c7ab544e65bc8d579f8d6b01eddbd77563e76d5b2eb3d470f6e",
+			"keccak256": "0x0ed0df08a416c01ee4b43167552456f1d1e8161bb12883c376f1c5bab35f016c",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://c7e4145a7d485d30c5d024793dd1dfbd6ed01d11cf1435b0457c8dce02067974",
-				"dweb:/ipfs/Qmb1sJHuZP6q3ovvLQVXUDJq6uozLKVb7r2Tn1xc7KZAiP"
+				"bzz-raw://0eacff69bb4b2f8d8a6f75a081bddc280286f8cfeb0f0debe5c5b9c9ab1ee052",
+				"dweb:/ipfs/QmYymj4V2uU3j9m3XUVCm6eQRe4dW5diatsgpET9qKQBQp"
 			]
 		}
 	},
