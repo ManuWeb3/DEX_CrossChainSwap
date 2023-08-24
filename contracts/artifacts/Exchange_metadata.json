@@ -37,38 +37,6 @@
 				"type": "error"
 			},
 			{
-				"inputs": [
-					{
-						"internalType": "uint64",
-						"name": "destinationChainSelector",
-						"type": "uint64"
-					}
-				],
-				"name": "DestinationChainNotWhitelisted",
-				"type": "error"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "address",
-						"name": "owner",
-						"type": "address"
-					},
-					{
-						"internalType": "address",
-						"name": "target",
-						"type": "address"
-					},
-					{
-						"internalType": "uint256",
-						"name": "value",
-						"type": "uint256"
-					}
-				],
-				"name": "FailedToWithdrawEth",
-				"type": "error"
-			},
-			{
 				"inputs": [],
 				"name": "InsufficientERC20Input",
 				"type": "error"
@@ -95,27 +63,6 @@
 				"type": "error"
 			},
 			{
-				"inputs": [
-					{
-						"internalType": "uint256",
-						"name": "currentBalance",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
-						"name": "calculatedFees",
-						"type": "uint256"
-					}
-				],
-				"name": "NotEnoughBalance",
-				"type": "error"
-			},
-			{
-				"inputs": [],
-				"name": "NothingToWithdraw",
-				"type": "error"
-			},
-			{
 				"inputs": [],
 				"name": "OutputAmountInsufficient",
 				"type": "error"
@@ -123,28 +70,6 @@
 			{
 				"inputs": [],
 				"name": "SendFailed",
-				"type": "error"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "address",
-						"name": "sender",
-						"type": "address"
-					}
-				],
-				"name": "SenderNotWhitelisted",
-				"type": "error"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "uint64",
-						"name": "sourceChainSelector",
-						"type": "uint64"
-					}
-				],
-				"name": "SourceChainNotWhitelisted",
 				"type": "error"
 			},
 			{
@@ -195,40 +120,10 @@
 				"anonymous": false,
 				"inputs": [
 					{
-						"indexed": true,
+						"indexed": false,
 						"internalType": "bytes32",
 						"name": "messageId",
 						"type": "bytes32"
-					},
-					{
-						"indexed": true,
-						"internalType": "uint64",
-						"name": "sourceChainSelector",
-						"type": "uint64"
-					},
-					{
-						"indexed": false,
-						"internalType": "address",
-						"name": "sender",
-						"type": "address"
-					},
-					{
-						"indexed": false,
-						"internalType": "string",
-						"name": "text",
-						"type": "string"
-					},
-					{
-						"indexed": false,
-						"internalType": "address",
-						"name": "token",
-						"type": "address"
-					},
-					{
-						"indexed": false,
-						"internalType": "uint256",
-						"name": "tokenAmount",
-						"type": "uint256"
 					}
 				],
 				"name": "MessageReceived",
@@ -238,52 +133,10 @@
 				"anonymous": false,
 				"inputs": [
 					{
-						"indexed": true,
+						"indexed": false,
 						"internalType": "bytes32",
 						"name": "messageId",
 						"type": "bytes32"
-					},
-					{
-						"indexed": true,
-						"internalType": "uint64",
-						"name": "destinationChainSelector",
-						"type": "uint64"
-					},
-					{
-						"indexed": false,
-						"internalType": "address",
-						"name": "receiver",
-						"type": "address"
-					},
-					{
-						"indexed": false,
-						"internalType": "string",
-						"name": "text",
-						"type": "string"
-					},
-					{
-						"indexed": false,
-						"internalType": "address",
-						"name": "token",
-						"type": "address"
-					},
-					{
-						"indexed": false,
-						"internalType": "uint256",
-						"name": "tokenAmount",
-						"type": "uint256"
-					},
-					{
-						"indexed": false,
-						"internalType": "address",
-						"name": "feeToken",
-						"type": "address"
-					},
-					{
-						"indexed": false,
-						"internalType": "uint256",
-						"name": "fees",
-						"type": "uint256"
 					}
 				],
 				"name": "MessageSent",
@@ -414,6 +267,10 @@
 				],
 				"name": "Transfer",
 				"type": "event"
+			},
+			{
+				"stateMutability": "nonpayable",
+				"type": "fallback"
 			},
 			{
 				"inputs": [],
@@ -567,6 +424,19 @@
 			},
 			{
 				"inputs": [],
+				"name": "contractBalance",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
 				"name": "decimals",
 				"outputs": [
 					{
@@ -599,45 +469,6 @@
 						"type": "bool"
 					}
 				],
-				"stateMutability": "nonpayable",
-				"type": "function"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "address",
-						"name": "_sender",
-						"type": "address"
-					}
-				],
-				"name": "denySender",
-				"outputs": [],
-				"stateMutability": "nonpayable",
-				"type": "function"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "uint64",
-						"name": "_destinationChainSelector",
-						"type": "uint64"
-					}
-				],
-				"name": "denylistDestinationChain",
-				"outputs": [],
-				"stateMutability": "nonpayable",
-				"type": "function"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "uint64",
-						"name": "_sourceChainSelector",
-						"type": "uint64"
-					}
-				],
-				"name": "denylistSourceChain",
-				"outputs": [],
 				"stateMutability": "nonpayable",
 				"type": "function"
 			},
@@ -678,34 +509,6 @@
 						"internalType": "address",
 						"name": "",
 						"type": "address"
-					}
-				],
-				"stateMutability": "view",
-				"type": "function"
-			},
-			{
-				"inputs": [],
-				"name": "getLastReceivedMessageDetails",
-				"outputs": [
-					{
-						"internalType": "bytes32",
-						"name": "messageId",
-						"type": "bytes32"
-					},
-					{
-						"internalType": "string",
-						"name": "text",
-						"type": "string"
-					},
-					{
-						"internalType": "address",
-						"name": "tokenAddress",
-						"type": "address"
-					},
-					{
-						"internalType": "uint256",
-						"name": "tokenAmount",
-						"type": "uint256"
 					}
 				],
 				"stateMutability": "view",
@@ -832,84 +635,6 @@
 						"internalType": "uint256",
 						"name": "",
 						"type": "uint256"
-					}
-				],
-				"stateMutability": "nonpayable",
-				"type": "function"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "uint64",
-						"name": "_destinationChainSelector",
-						"type": "uint64"
-					},
-					{
-						"internalType": "address",
-						"name": "_receiver",
-						"type": "address"
-					},
-					{
-						"internalType": "string",
-						"name": "_text",
-						"type": "string"
-					},
-					{
-						"internalType": "address",
-						"name": "_token",
-						"type": "address"
-					},
-					{
-						"internalType": "uint256",
-						"name": "_amount",
-						"type": "uint256"
-					}
-				],
-				"name": "sendMessagePayLINK",
-				"outputs": [
-					{
-						"internalType": "bytes32",
-						"name": "messageId",
-						"type": "bytes32"
-					}
-				],
-				"stateMutability": "nonpayable",
-				"type": "function"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "uint64",
-						"name": "_destinationChainSelector",
-						"type": "uint64"
-					},
-					{
-						"internalType": "address",
-						"name": "_receiver",
-						"type": "address"
-					},
-					{
-						"internalType": "string",
-						"name": "_text",
-						"type": "string"
-					},
-					{
-						"internalType": "address",
-						"name": "_token",
-						"type": "address"
-					},
-					{
-						"internalType": "uint256",
-						"name": "_amount",
-						"type": "uint256"
-					}
-				],
-				"name": "sendMessagePayNative",
-				"outputs": [
-					{
-						"internalType": "bytes32",
-						"name": "messageId",
-						"type": "bytes32"
 					}
 				],
 				"stateMutability": "nonpayable",
@@ -1056,137 +781,6 @@
 				"outputs": [],
 				"stateMutability": "nonpayable",
 				"type": "function"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "uint64",
-						"name": "_destinationChainSelector",
-						"type": "uint64"
-					}
-				],
-				"name": "whitelistDestinationChain",
-				"outputs": [],
-				"stateMutability": "nonpayable",
-				"type": "function"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "address",
-						"name": "_sender",
-						"type": "address"
-					}
-				],
-				"name": "whitelistSender",
-				"outputs": [],
-				"stateMutability": "nonpayable",
-				"type": "function"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "uint64",
-						"name": "_sourceChainSelector",
-						"type": "uint64"
-					}
-				],
-				"name": "whitelistSourceChain",
-				"outputs": [],
-				"stateMutability": "nonpayable",
-				"type": "function"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "uint64",
-						"name": "",
-						"type": "uint64"
-					}
-				],
-				"name": "whitelistedDestinationChains",
-				"outputs": [
-					{
-						"internalType": "bool",
-						"name": "",
-						"type": "bool"
-					}
-				],
-				"stateMutability": "view",
-				"type": "function"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "address",
-						"name": "",
-						"type": "address"
-					}
-				],
-				"name": "whitelistedSenders",
-				"outputs": [
-					{
-						"internalType": "bool",
-						"name": "",
-						"type": "bool"
-					}
-				],
-				"stateMutability": "view",
-				"type": "function"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "uint64",
-						"name": "",
-						"type": "uint64"
-					}
-				],
-				"name": "whitelistedSourceChains",
-				"outputs": [
-					{
-						"internalType": "bool",
-						"name": "",
-						"type": "bool"
-					}
-				],
-				"stateMutability": "view",
-				"type": "function"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "address",
-						"name": "_beneficiary",
-						"type": "address"
-					}
-				],
-				"name": "withdraw",
-				"outputs": [],
-				"stateMutability": "nonpayable",
-				"type": "function"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "address",
-						"name": "_beneficiary",
-						"type": "address"
-					},
-					{
-						"internalType": "address",
-						"name": "_token",
-						"type": "address"
-					}
-				],
-				"name": "withdrawToken",
-				"outputs": [],
-				"stateMutability": "nonpayable",
-				"type": "function"
-			},
-			{
-				"stateMutability": "payable",
-				"type": "receive"
 			}
 		],
 		"devdoc": {
@@ -1227,35 +821,8 @@
 				"decreaseAllowance(address,uint256)": {
 					"details": "Atomically decreases the allowance granted to `spender` by the caller. This is an alternative to {approve} that can be used as a mitigation for problems described in {IERC20-approve}. Emits an {Approval} event indicating the updated allowance. Requirements: - `spender` cannot be the zero address. - `spender` must have allowance for the caller of at least `subtractedValue`."
 				},
-				"denySender(address)": {
-					"details": "Denylists a sender.",
-					"params": {
-						"_sender": "The address of the sender."
-					}
-				},
-				"denylistDestinationChain(uint64)": {
-					"details": "Denylists a chain for transactions.",
-					"params": {
-						"_destinationChainSelector": "The selector of the destination chain to be denylisted."
-					}
-				},
-				"denylistSourceChain(uint64)": {
-					"details": "Denylists a chain for transactions.",
-					"params": {
-						"_sourceChainSelector": "The selector of the source chain to be denylisted."
-					}
-				},
 				"getAmountOfTokens(uint256,uint256,uint256)": {
 					"details": "returns the amount of TG/CCIP_BnM tokens that are required to be returned to the user/trader upon swap"
-				},
-				"getLastReceivedMessageDetails()": {
-					"details": "This function retrieves (returns) the ID, text, token address, and token amount of the last received CCIP message.",
-					"returns": {
-						"messageId": "The ID of the last received CCIP message.",
-						"text": "The text of the last received CCIP message.",
-						"tokenAddress": "The address of the token in the last CCIP received message.",
-						"tokenAmount": "The amount of the token in the last CCIP received message."
-					}
 				},
 				"getReserveCCIP_BnM()": {
 					"details": "Returns the amount of `CCIP_BnM Tokens` held by the Exchange.sol contract (not user)"
@@ -1276,32 +843,6 @@
 				},
 				"removeLiquidity(uint256)": {
 					"details": "Returns the amount TGOLD/CCIP_BnM tokens that would be returned to the user in the swap of TG LP tokens for user-funds"
-				},
-				"sendMessagePayLINK(uint64,address,string,address,uint256)": {
-					"details": "Assumes your contract has sufficient LINK to pay for CCIP fees. (else fund your contract with LINK prior)",
-					"params": {
-						"_amount": "token amount.",
-						"_destinationChainSelector": "The identifier (aka selector) for the destination blockchain.",
-						"_receiver": "The address of the recipient on the destination blockchain. (to receive tokens)",
-						"_text": "The string data to be sent. (to be processed by _ccipReceive())",
-						"_token": "token address."
-					},
-					"returns": {
-						"messageId": "The ID of the CCIP message that got sent."
-					}
-				},
-				"sendMessagePayNative(uint64,address,string,address,uint256)": {
-					"details": "Assumes your contract has sufficient native gas like ETH on Ethereum or MATIC on Polygon.",
-					"params": {
-						"_amount": "token amount.",
-						"_destinationChainSelector": "The identifier (aka selector) for the destination blockchain.",
-						"_receiver": "The address of the recipient on the destination blockchain.",
-						"_text": "The string data to be sent.",
-						"_token": "token address."
-					},
-					"returns": {
-						"messageId": "The ID of the CCIP message that got sent."
-					}
 				},
 				"supportsInterface(bytes4)": {
 					"params": {
@@ -1331,37 +872,6 @@
 				},
 				"transferFrom(address,address,uint256)": {
 					"details": "See {IERC20-transferFrom}. Emits an {Approval} event indicating the updated allowance. This is not required by the EIP. See the note at the beginning of {ERC20}. NOTE: Does not update the allowance if the current allowance is the maximum `uint256`. Requirements: - `from` and `to` cannot be the zero address. - `from` must have a balance of at least `amount`. - the caller must have allowance for ``from``'s tokens of at least `amount`."
-				},
-				"whitelistDestinationChain(uint64)": {
-					"details": "Whitelists a chain for transactions.",
-					"params": {
-						"_destinationChainSelector": "The selector of the destination chain to be whitelisted."
-					}
-				},
-				"whitelistSender(address)": {
-					"details": "Whitelists a sender.",
-					"params": {
-						"_sender": "The address of the sender."
-					}
-				},
-				"whitelistSourceChain(uint64)": {
-					"details": "Whitelists a chain for transactions.",
-					"params": {
-						"_sourceChainSelector": "The selector of the source chain to be whitelisted."
-					}
-				},
-				"withdraw(address)": {
-					"details": "This function reverts if there are no funds to withdraw or if the transfer fails. It should only be callable by the owner of the contract.",
-					"params": {
-						"_beneficiary": "The address to which the Ether should be sent."
-					}
-				},
-				"withdrawToken(address,address)": {
-					"details": "This function reverts with a 'NothingToWithdraw' error if there are no tokens to withdraw.",
-					"params": {
-						"_beneficiary": "The address to which the tokens will be sent.",
-						"_token": "The contract address of the ERC20 token to be withdrawn."
-					}
 				}
 			},
 			"version": 1
@@ -1378,50 +888,17 @@
 				"ccipReceive((bytes32,uint64,bytes,bytes,(address,uint256)[]))": {
 					"notice": "Called by the Router to deliver a message. If this reverts, any token transfers also revert. The message will move to a FAILED state and become available for manual execution."
 				},
-				"denySender(address)": {
-					"notice": "This function can only be called by the owner."
-				},
-				"denylistDestinationChain(uint64)": {
-					"notice": "This function can only be called by the owner."
-				},
-				"denylistSourceChain(uint64)": {
-					"notice": "This function can only be called by the owner."
-				},
-				"getLastReceivedMessageDetails()": {
-					"notice": "Returns the details of the last CCIP received message."
-				},
 				"getRouter()": {
 					"notice": "Return the current router"
 				},
 				"owner()": {
 					"notice": "Get the current owner"
 				},
-				"sendMessagePayLINK(uint64,address,string,address,uint256)": {
-					"notice": "Sends data and transfer tokens to receiver on the destination chain.Pay for fees in LINK."
-				},
-				"sendMessagePayNative(uint64,address,string,address,uint256)": {
-					"notice": "Sends data and transfer tokens to receiver on the destination chain.Pay for fees in native gas."
-				},
 				"supportsInterface(bytes4)": {
 					"notice": "IERC165 supports an interfaceId"
 				},
 				"transferOwnership(address)": {
 					"notice": "Allows an owner to begin transferring ownership to a new address, pending."
-				},
-				"whitelistDestinationChain(uint64)": {
-					"notice": "This function can only be called by the owner."
-				},
-				"whitelistSender(address)": {
-					"notice": "This function can only be called by the owner."
-				},
-				"whitelistSourceChain(uint64)": {
-					"notice": "This function can only be called by the owner."
-				},
-				"withdraw(address)": {
-					"notice": "Allows the contract owner to withdraw the entire balance of Ether from the contract."
-				},
-				"withdrawToken(address,address)": {
-					"notice": "Allows the owner of the contract to withdraw all tokens of a specific ERC20 token."
 				}
 			},
 			"notice": "All the frontend scripts also get changed with the new token-pair here",
@@ -1476,20 +953,12 @@
 				"dweb:/ipfs/QmTnqhNtBD9bUmqVaR4YHkWrBUdSGHV3DXAgrTM193PGkH"
 			]
 		},
-		"@chainlink/contracts-ccip/src/v0.8/ccip/interfaces/IRouterClient.sol": {
-			"keccak256": "0x9899fab6a40f68408ddf153612c553f2441ea27770176bf71ccce22c40393286",
-			"license": "MIT",
-			"urls": [
-				"bzz-raw://00fbdb19d1dc68983c972644b68bff9f2a277d088841444675b3448dc01edbb7",
-				"dweb:/ipfs/Qma2PN1vYgDrou5ZN72NfvN5YbdHyxWyeBqM67AuRnvDRs"
-			]
-		},
 		"@chainlink/contracts-ccip/src/v0.8/ccip/libraries/Client.sol": {
-			"keccak256": "0x2fb8e11d517fa5ee213aaab3f4d416155cd2b72d61ba443dbeff6b41d29e9523",
+			"keccak256": "0x36bd630569ab23bba6e56f8cea10408e39b5c9d019491bfd0849db1dd5198139",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://fcdf688dc96619a256fdbddce1a6ceff0f6c57963be267148abdcfd57616725e",
-				"dweb:/ipfs/QmVEF1ZER2V86L8CcMYTqt1VwQ4Xw2pa12pNZbb99UkqRT"
+				"bzz-raw://34b056d702fa503e1790b6b8f59357346b4bc4ccda436a9264a28feabea3b0c5",
+				"dweb:/ipfs/Qmf7tvd9pHyUpqQ9dZ3icdc8nsatSmjuHfH7zHi8abpAwS"
 			]
 		},
 		"@chainlink/contracts-ccip/src/v0.8/interfaces/OwnableInterface.sol": {
@@ -1514,14 +983,6 @@
 			"urls": [
 				"bzz-raw://e49bdba6c6013040eb546db3bbceca7d2c8ac86a2c15ff2c85eacd0ed8541271",
 				"dweb:/ipfs/QmYa5en1yth7SdJfq9M7mcwDJJvy3996PSEjiwzgH1HvJW"
-			]
-		},
-		"@chainlink/contracts/src/v0.8/interfaces/LinkTokenInterface.sol": {
-			"keccak256": "0xc7d7cd730d36825485ef4107d93c3ff18b9f3a5a00ea3d5988ba9a0bd70b10c5",
-			"license": "MIT",
-			"urls": [
-				"bzz-raw://8cb1064885ecbcd9c3adba779e190cb4a538e5d4d15aeccb67d3376bdffc94bd",
-				"dweb:/ipfs/QmcQHK6ewve7tFi4XXK65JthQg4kQzApQikWcURJjGt4iQ"
 			]
 		},
 		"@openzeppelin/contracts/token/ERC20/ERC20.sol": {
@@ -1557,19 +1018,11 @@
 			]
 		},
 		"contracts/Exchange.sol": {
-			"keccak256": "0xe6596d398c9a805d51a3430d96da5ec14ea95b09f781b6422e6deab033ee2cdb",
+			"keccak256": "0x6a196a008c6611a1f51cd192de8bead32f8533c9c4a29d3730556ae497053a6c",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://0ab9c2124d6848d7ec7b03284cf02e55019c64aabb13a3393109f03b1e8fe5c3",
-				"dweb:/ipfs/QmfBCAkiEa1aQkEBqicpb7nKepVdBmWQ2aqW97xHMtBVER"
-			]
-		},
-		"contracts/ProgrammableTokenTransfers.sol": {
-			"keccak256": "0xd087ee89ac773bca15b29309e3e9758d17645baa0d2e514f4461bf53f276dce6",
-			"license": "MIT",
-			"urls": [
-				"bzz-raw://5f4be7c90602e5751e66abfb8526b9d174a910644366e7470ba4ef24309fe364",
-				"dweb:/ipfs/QmWzqkS22Ug5P9LoQszsZkU15gYtyzg3PQsnHHCFTFTGFF"
+				"bzz-raw://4a4c51173c011bf6b9e1b502fb72b89b9f349795c0c17ca156f4b55cb66c8d47",
+				"dweb:/ipfs/QmfQQ1MiMJdXBhBn7YTNrAokJRvF3EQaAKeqYLX8uqFVVH"
 			]
 		},
 		"hardhat/console.sol": {

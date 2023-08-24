@@ -2,14 +2,17 @@
 pragma solidity ^0.8.19;
 
 import {Client} from "@chainlink/contracts-ccip/src/v0.8/ccip/libraries/Client.sol";                    // all 3 structs
-import {OwnerIsCreator} from "@chainlink/contracts-ccip/src/v0.8/shared/access/OwnerIsCreator.sol";     // onlyOwner modifier
 import {IRouterClient} from "@chainlink/contracts-ccip/src/v0.8/ccip/interfaces/IRouterClient.sol";     // router client (Sender)
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {LinkTokenInterface} from "@chainlink/contracts/src/v0.8/interfaces/LinkTokenInterface.sol";     // to pay fee in LINK (1/2 options)
+import "./Whitelisting.sol";
+import "./Withdraw.sol";
 import "hardhat/console.sol";
+// included in Whitelisting and Withdraw
+//import {OwnerIsCreator} from "@chainlink/contracts-ccip/src/v0.8/shared/access/OwnerIsCreator.sol";     // onlyOwner modifier
 
-contract SenderExchange is ERC20, OwnerIsCreator {
-    
+contract SenderExchange is ERC20, Whitelisting, Withdraw {
+
     error AddressZeroError();
     error NotEnoughLINKBalance(uint256 _linkBalance, uint256 ccipFees);
     error InsufficientERC20Input();
@@ -24,20 +27,22 @@ contract SenderExchange is ERC20, OwnerIsCreator {
     address private immutable i_link;       // to pay CCIPFee in LINK only, for now
     address private RxExchangeAddress;      // Receiver # 1 (EOA for 1st trial)
     address private CCIP_BnMMumbaiAddress;  // Receiver # 2
-    
+
     constructor 
     (address _TGOLDTokenAddress, 
     address _CCIP_BnMSepoliaAddress, 
     address _router, 
     address _link,
-    address _RxExchangeAddress)
+    address _RxExchangeAddress,
+    address _CCIP_BnMMumbaiAddress)
     ERC20 ("TGOLD LP Token", "TGLP") {
         
         if(_TGOLDTokenAddress == address(0) || 
         _CCIP_BnMSepoliaAddress == address(0) || 
         _router == address(0) || 
         _link == address(0) ||
-        _RxExchangeAddress == address(0)
+        _RxExchangeAddress == address(0) ||
+        _CCIP_BnMMumbaiAddress == address(0)
         ) 
         {
             revert AddressZeroError();
@@ -48,6 +53,7 @@ contract SenderExchange is ERC20, OwnerIsCreator {
         i_router = _router;
         i_link = _link;
         RxExchangeAddress = _RxExchangeAddress;
+        CCIP_BnMMumbaiAddress = _CCIP_BnMMumbaiAddress;
     }
 
     /**
@@ -56,7 +62,7 @@ contract SenderExchange is ERC20, OwnerIsCreator {
     * @param _amountTGOLD TG Tokens deposited by the LP
     * @param _amountCCIP_BnM CCIP_BnM tokens deposited by the LP
     */
-    function addLiquidity(uint256 _amountTGOLD, uint256 _amountCCIP_BnM) public returns (uint256) {
+    function addLiquidity(uint256 _amountTGOLD, uint256 _amountCCIP_BnM) external returns (uint256) {
         uint256 liquidity;
         uint256 TGOLDReserve = getReserveTGOLD();           // TG Reserve, 1st addLiq -> TG reserve = 0, BUT later txns (later-1) reserve-value
         uint256 CCIP_BnMReserve = getReserveCCIP_BnM();     // 
@@ -85,6 +91,10 @@ contract SenderExchange is ERC20, OwnerIsCreator {
         _mint(_msgSender(), liquidity);
         return liquidity;
    }
+
+   receive() external payable {}
+
+   fallback() external payable {}
 
     // ================================
     // GETTERS / Other Helper or internal functions

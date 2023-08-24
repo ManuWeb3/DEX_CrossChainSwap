@@ -31,6 +31,11 @@
 						"internalType": "address",
 						"name": "_RxExchangeAddress",
 						"type": "address"
+					},
+					{
+						"internalType": "address",
+						"name": "_CCIP_BnMMumbaiAddress",
+						"type": "address"
 					}
 				],
 				"stateMutability": "nonpayable",
@@ -39,6 +44,38 @@
 			{
 				"inputs": [],
 				"name": "AddressZeroError",
+				"type": "error"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint64",
+						"name": "destinationChainSelector",
+						"type": "uint64"
+					}
+				],
+				"name": "DestinationChainNotWhitelisted",
+				"type": "error"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "owner",
+						"type": "address"
+					},
+					{
+						"internalType": "address",
+						"name": "target",
+						"type": "address"
+					},
+					{
+						"internalType": "uint256",
+						"name": "value",
+						"type": "uint256"
+					}
+				],
+				"name": "FailedToWithdrawEth",
 				"type": "error"
 			},
 			{
@@ -60,6 +97,33 @@
 					}
 				],
 				"name": "NotEnoughLINKBalance",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "NothingToWithdraw",
+				"type": "error"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "sender",
+						"type": "address"
+					}
+				],
+				"name": "SenderNotWhitelisted",
+				"type": "error"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint64",
+						"name": "sourceChainSelector",
+						"type": "uint64"
+					}
+				],
+				"name": "SourceChainNotWhitelisted",
 				"type": "error"
 			},
 			{
@@ -188,6 +252,10 @@
 				],
 				"name": "Transfer",
 				"type": "event"
+			},
+			{
+				"stateMutability": "payable",
+				"type": "fallback"
 			},
 			{
 				"inputs": [],
@@ -321,6 +389,45 @@
 						"type": "bool"
 					}
 				],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "_sender",
+						"type": "address"
+					}
+				],
+				"name": "denySender",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint64",
+						"name": "_destinationChainSelector",
+						"type": "uint64"
+					}
+				],
+				"name": "denylistDestinationChain",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint64",
+						"name": "_sourceChainSelector",
+						"type": "uint64"
+					}
+				],
+				"name": "denylistSourceChain",
+				"outputs": [],
 				"stateMutability": "nonpayable",
 				"type": "function"
 			},
@@ -530,6 +637,137 @@
 				"outputs": [],
 				"stateMutability": "nonpayable",
 				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint64",
+						"name": "_destinationChainSelector",
+						"type": "uint64"
+					}
+				],
+				"name": "whitelistDestinationChain",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "_sender",
+						"type": "address"
+					}
+				],
+				"name": "whitelistSender",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint64",
+						"name": "_sourceChainSelector",
+						"type": "uint64"
+					}
+				],
+				"name": "whitelistSourceChain",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint64",
+						"name": "",
+						"type": "uint64"
+					}
+				],
+				"name": "whitelistedDestinationChains",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"name": "whitelistedSenders",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint64",
+						"name": "",
+						"type": "uint64"
+					}
+				],
+				"name": "whitelistedSourceChains",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "_beneficiary",
+						"type": "address"
+					}
+				],
+				"name": "withdraw",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "_beneficiary",
+						"type": "address"
+					},
+					{
+						"internalType": "address",
+						"name": "_token",
+						"type": "address"
+					}
+				],
+				"name": "withdrawToken",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"stateMutability": "payable",
+				"type": "receive"
 			}
 		],
 		"devdoc": {
@@ -564,6 +802,24 @@
 				"decreaseAllowance(address,uint256)": {
 					"details": "Atomically decreases the allowance granted to `spender` by the caller. This is an alternative to {approve} that can be used as a mitigation for problems described in {IERC20-approve}. Emits an {Approval} event indicating the updated allowance. Requirements: - `spender` cannot be the zero address. - `spender` must have allowance for the caller of at least `subtractedValue`."
 				},
+				"denySender(address)": {
+					"details": "Denylists a sender.",
+					"params": {
+						"_sender": "The address of the sender."
+					}
+				},
+				"denylistDestinationChain(uint64)": {
+					"details": "Denylists a chain for transactions.",
+					"params": {
+						"_destinationChainSelector": "The selector of the destination chain to be denylisted."
+					}
+				},
+				"denylistSourceChain(uint64)": {
+					"details": "Denylists a chain for transactions.",
+					"params": {
+						"_sourceChainSelector": "The selector of the source chain to be denylisted."
+					}
+				},
 				"increaseAllowance(address,uint256)": {
 					"details": "Atomically increases the allowance granted to `spender` by the caller. This is an alternative to {approve} that can be used as a mitigation for problems described in {IERC20-approve}. Emits an {Approval} event indicating the updated allowance. Requirements: - `spender` cannot be the zero address."
 				},
@@ -581,6 +837,37 @@
 				},
 				"transferFrom(address,address,uint256)": {
 					"details": "See {IERC20-transferFrom}. Emits an {Approval} event indicating the updated allowance. This is not required by the EIP. See the note at the beginning of {ERC20}. NOTE: Does not update the allowance if the current allowance is the maximum `uint256`. Requirements: - `from` and `to` cannot be the zero address. - `from` must have a balance of at least `amount`. - the caller must have allowance for ``from``'s tokens of at least `amount`."
+				},
+				"whitelistDestinationChain(uint64)": {
+					"details": "Whitelists a chain for transactions.",
+					"params": {
+						"_destinationChainSelector": "The selector of the destination chain to be whitelisted."
+					}
+				},
+				"whitelistSender(address)": {
+					"details": "Whitelists a sender.",
+					"params": {
+						"_sender": "The address of the sender."
+					}
+				},
+				"whitelistSourceChain(uint64)": {
+					"details": "Whitelists a chain for transactions.",
+					"params": {
+						"_sourceChainSelector": "The selector of the source chain to be whitelisted."
+					}
+				},
+				"withdraw(address)": {
+					"details": "This function reverts if there are no funds to withdraw or if the transfer fails. It should only be callable by the owner of the contract.",
+					"params": {
+						"_beneficiary": "The address to which the Ether should be sent."
+					}
+				},
+				"withdrawToken(address,address)": {
+					"details": "This function reverts with a 'NothingToWithdraw' error if there are no tokens to withdraw.",
+					"params": {
+						"_beneficiary": "The address to which the tokens will be sent.",
+						"_token": "The contract address of the ERC20 token to be withdrawn."
+					}
 				}
 			},
 			"version": 1
@@ -594,11 +881,35 @@
 				"addLiquidity(uint256,uint256)": {
 					"notice": "@param _amountTGOLD TG Tokens deposited by the LP"
 				},
+				"denySender(address)": {
+					"notice": "This function can only be called by the owner."
+				},
+				"denylistDestinationChain(uint64)": {
+					"notice": "This function can only be called by the owner."
+				},
+				"denylistSourceChain(uint64)": {
+					"notice": "This function can only be called by the owner."
+				},
 				"owner()": {
 					"notice": "Get the current owner"
 				},
 				"transferOwnership(address)": {
 					"notice": "Allows an owner to begin transferring ownership to a new address, pending."
+				},
+				"whitelistDestinationChain(uint64)": {
+					"notice": "This function can only be called by the owner."
+				},
+				"whitelistSender(address)": {
+					"notice": "This function can only be called by the owner."
+				},
+				"whitelistSourceChain(uint64)": {
+					"notice": "This function can only be called by the owner."
+				},
+				"withdraw(address)": {
+					"notice": "Allows the contract owner to withdraw the entire balance of Ether from the contract."
+				},
+				"withdrawToken(address,address)": {
+					"notice": "Allows the owner of the contract to withdraw all tokens of a specific ERC20 token."
 				}
 			},
 			"version": 1
@@ -668,6 +979,14 @@
 				"dweb:/ipfs/QmdehywxLNrSnNAfrfUqoQr1jPrGX2sBnCQ2wdZAZLx5eB"
 			]
 		},
+		"@chainlink/contracts-ccip/src/v0.8/vendor/openzeppelin-solidity/v4.8.0/token/ERC20/IERC20.sol": {
+			"keccak256": "0xf7a52b7d3a7b79117544d6bbeb8564bd22c760c4937d69914b99641a957a8f2a",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://2b5afd167693d0e80d30d0f50b718b5df237c97d721383b97154049cabab1128",
+				"dweb:/ipfs/QmZpVB96pJpaJmmnqB1RC3qSZk8upgLL22YZtq97JzpK5H"
+			]
+		},
 		"@chainlink/contracts/src/v0.8/interfaces/LinkTokenInterface.sol": {
 			"keccak256": "0xc7d7cd730d36825485ef4107d93c3ff18b9f3a5a00ea3d5988ba9a0bd70b10c5",
 			"license": "MIT",
@@ -709,11 +1028,27 @@
 			]
 		},
 		"contracts/SenderExchange.sol": {
-			"keccak256": "0x51b05efc840be04184edf9338646d0f24fc20c134d37ce022adcdf9b27087cd9",
+			"keccak256": "0x0632144f3154d080f952ec4e619d0d56955f9d0dc59f99806dcb028419fd8530",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://86afc8ecb9fc8435c2648910896f490c75f6abd962d20cfc9d98e70cb05b6449",
-				"dweb:/ipfs/QmYKd84yfK3yRnT4exPE487VR4RYXiSCC4Rhw7n4zWWfj7"
+				"bzz-raw://18193ff24d09e4bc2ed008da3936367912e41da2b884a47a49bf28366b3d43ce",
+				"dweb:/ipfs/QmQqn3eNxhJbJZaPRCfHsMfgyW9a4aHLfHuzwHSUGXqk8c"
+			]
+		},
+		"contracts/Whitelisting.sol": {
+			"keccak256": "0xb8e45b4db69dc3b461febf2bc721aef91e1a503c201cb0fe4870fbcb0e2701c8",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://f67b1dd09b8b9038f7669b0d5475dc33555c69e7e92c6f87e44c798ea8781f00",
+				"dweb:/ipfs/QmPxzG2YJU9XS8eZUpN4kGk2KR2fajXnPinGHLLdRu8nWH"
+			]
+		},
+		"contracts/Withdraw.sol": {
+			"keccak256": "0x073d5a353c49b2a5238d000f4503809dd0882380824f05fe86c33bad86734131",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://dbc6f463b886dcac87a1b842165fab14cb3ee072f9b299d953bc77a1b4901beb",
+				"dweb:/ipfs/QmZA8kh3hd93VE6fzMLPQeY9mBKzQLVEHh56hTdTirMA3o"
 			]
 		},
 		"hardhat/console.sol": {

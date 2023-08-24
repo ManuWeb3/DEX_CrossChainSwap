@@ -373,6 +373,12 @@ contract Exchange is ERC20, CCIPReceiver, OwnerIsCreator {
     function getReserveCCIP_BnM() public view returns (uint256) {
         return IERC20(CCIP_BnMTokenAddress).balanceOf(address(this));   // convention - IERC20(address).balaOf(address)
     }
+
+    
+    fallback() external {}
+
+    uint256 public contractBalance = address(this).balance;
+
 }
 
 

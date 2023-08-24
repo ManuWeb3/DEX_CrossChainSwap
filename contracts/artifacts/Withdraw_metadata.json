@@ -1,0 +1,244 @@
+{
+	"compiler": {
+		"version": "0.8.19+commit.7dd6d404"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "owner",
+						"type": "address"
+					},
+					{
+						"internalType": "address",
+						"name": "target",
+						"type": "address"
+					},
+					{
+						"internalType": "uint256",
+						"name": "value",
+						"type": "uint256"
+					}
+				],
+				"name": "FailedToWithdrawEth",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "NothingToWithdraw",
+				"type": "error"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "from",
+						"type": "address"
+					},
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "to",
+						"type": "address"
+					}
+				],
+				"name": "OwnershipTransferRequested",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "from",
+						"type": "address"
+					},
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "to",
+						"type": "address"
+					}
+				],
+				"name": "OwnershipTransferred",
+				"type": "event"
+			},
+			{
+				"inputs": [],
+				"name": "acceptOwnership",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "owner",
+				"outputs": [
+					{
+						"internalType": "address",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "to",
+						"type": "address"
+					}
+				],
+				"name": "transferOwnership",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "_beneficiary",
+						"type": "address"
+					}
+				],
+				"name": "withdraw",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "_beneficiary",
+						"type": "address"
+					},
+					{
+						"internalType": "address",
+						"name": "_token",
+						"type": "address"
+					}
+				],
+				"name": "withdrawToken",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			}
+		],
+		"devdoc": {
+			"kind": "dev",
+			"methods": {
+				"withdraw(address)": {
+					"details": "This function reverts if there are no funds to withdraw or if the transfer fails. It should only be callable by the owner of the contract.",
+					"params": {
+						"_beneficiary": "The address to which the Ether should be sent."
+					}
+				},
+				"withdrawToken(address,address)": {
+					"details": "This function reverts with a 'NothingToWithdraw' error if there are no tokens to withdraw.",
+					"params": {
+						"_beneficiary": "The address to which the tokens will be sent.",
+						"_token": "The contract address of the ERC20 token to be withdrawn."
+					}
+				}
+			},
+			"version": 1
+		},
+		"userdoc": {
+			"kind": "user",
+			"methods": {
+				"acceptOwnership()": {
+					"notice": "Allows an ownership transfer to be completed by the recipient."
+				},
+				"owner()": {
+					"notice": "Get the current owner"
+				},
+				"transferOwnership(address)": {
+					"notice": "Allows an owner to begin transferring ownership to a new address, pending."
+				},
+				"withdraw(address)": {
+					"notice": "Allows the contract owner to withdraw the entire balance of Ether from the contract."
+				},
+				"withdrawToken(address,address)": {
+					"notice": "Allows the owner of the contract to withdraw all tokens of a specific ERC20 token."
+				}
+			},
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"contracts/Withdraw.sol": "Withdraw"
+		},
+		"evmVersion": "paris",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": false,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"@chainlink/contracts-ccip/src/v0.8/ConfirmedOwner.sol": {
+			"keccak256": "0x99d0b0786fe368970009c703f2249bfbc56340ddf1a28b60d2915bb58c34cd72",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://af0371c1af45db651823b9a3d5af761b08243c78f105166342eee28de356c8dd",
+				"dweb:/ipfs/QmPnC9qNDKwJFd5unwLb9pxjrutoe8MWjm5EXHTxq2kJ4x"
+			]
+		},
+		"@chainlink/contracts-ccip/src/v0.8/ConfirmedOwnerWithProposal.sol": {
+			"keccak256": "0xa2f137a1d066795aeac76226e58f33c982278cdd34b4f09e5a2243d5a0924654",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://a73f185d79d82e6d9baa531d55ffb88c80def1f6187dff93d3df6b2cb5ab7187",
+				"dweb:/ipfs/QmVZEePJvcN1KxSTaD5rhKhaMBWHqs6ZeZ5s17Ft6mR5hJ"
+			]
+		},
+		"@chainlink/contracts-ccip/src/v0.8/interfaces/OwnableInterface.sol": {
+			"keccak256": "0xb8b3a97783dddc198b790c4cec1eda7fb47aa38cbaea6555220d0ed8c735c086",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://acf7ed6aff47fbddeff1b85e1225a717dfa8bfb3ab89db0e6564346afcf03693",
+				"dweb:/ipfs/QmQQn5sKn1ARbt1WhYoHwfTJhK8fbQi8MbDQeHxGXTPbPE"
+			]
+		},
+		"@chainlink/contracts-ccip/src/v0.8/shared/access/OwnerIsCreator.sol": {
+			"keccak256": "0x010d0a67d81c4020004f72d95e8a7b08b98178de026e96565f315806e7525ada",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://8420832be0b0ef7823f8b1bd4cd6cc2028412ff5c53049a12c133b3c44f351fd",
+				"dweb:/ipfs/QmdehywxLNrSnNAfrfUqoQr1jPrGX2sBnCQ2wdZAZLx5eB"
+			]
+		},
+		"@chainlink/contracts-ccip/src/v0.8/vendor/openzeppelin-solidity/v4.8.0/token/ERC20/IERC20.sol": {
+			"keccak256": "0xf7a52b7d3a7b79117544d6bbeb8564bd22c760c4937d69914b99641a957a8f2a",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://2b5afd167693d0e80d30d0f50b718b5df237c97d721383b97154049cabab1128",
+				"dweb:/ipfs/QmZpVB96pJpaJmmnqB1RC3qSZk8upgLL22YZtq97JzpK5H"
+			]
+		},
+		"contracts/Withdraw.sol": {
+			"keccak256": "0x073d5a353c49b2a5238d000f4503809dd0882380824f05fe86c33bad86734131",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://dbc6f463b886dcac87a1b842165fab14cb3ee072f9b299d953bc77a1b4901beb",
+				"dweb:/ipfs/QmZA8kh3hd93VE6fzMLPQeY9mBKzQLVEHh56hTdTirMA3o"
+			]
+		}
+	},
+	"version": 1
+}
