@@ -17,6 +17,7 @@ library Client {
   }
 
   // If extraArgs is empty bytes, the default is 200k gas limit and strict = false.
+  // Despite whitelisting destinationChianSelector, it's not present in EVM2AnyMsg struct
   struct EVM2AnyMessage {
     bytes receiver; // abi.encode(receiver address) for dest EVM chains
     bytes data; // Data payload

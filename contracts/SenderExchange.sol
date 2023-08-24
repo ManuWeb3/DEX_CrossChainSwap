@@ -16,22 +16,36 @@ contract SenderExchange is ERC20, OwnerIsCreator {
     event MessageReceived(bytes32 messageId);
     event AddedLiquidtyAsset1(uint256 amountTGOLD);
 
-    address private TGOLDTokenAddress;
-    address private CCIP_BnMTokenAddress;
+    address private TGOLDAddress;
+    address private CCIP_BnMSepoliaAddress;
     address private immutable i_router;
-    address private immutable i_link;   // to pay CCIPFee in LINK only, for now
+    address private immutable i_link;       // to pay CCIPFee in LINK only, for now
+    address private RxExchangeAddress;      // Receiver # 1
+    address private CCIP_BnMMumbaiAddress;  // Receiver # 2
     
-    constructor (address _TGOLDToken, address _CCIP_BnMTokenAddress, address _router, address _link) 
+    constructor 
+    (address _TGOLDTokenAddress, 
+    address _CCIP_BnMSepoliaAddress, 
+    address _router, 
+    address _link,
+    address _RxExchangeAddress)
     ERC20 ("TGOLD Token", "TGLP") {
         
-        if(_TGOLDToken == address(0) || _CCIP_BnMTokenAddress == address(0) || _router == address(0) || _link == address(0)) {
+        if(_TGOLDTokenAddress == address(0) || 
+        _CCIP_BnMSepoliaAddress == address(0) || 
+        _router == address(0) || 
+        _link == address(0) ||
+        _RxExchangeAddress == address(0)
+        ) 
+        {
             revert AddressZeroError();
         }
 
-        TGOLDTokenAddress = _TGOLDToken;
-        CCIP_BnMTokenAddress = _CCIP_BnMTokenAddress;
+        TGOLDAddress = _TGOLDTokenAddress;
+        CCIP_BnMSepoliaAddress = _CCIP_BnMSepoliaAddress;
         i_router = _router;
         i_link = _link;
+        RxExchangeAddress = _RxExchangeAddress;
     }
 
     /**
@@ -45,8 +59,8 @@ contract SenderExchange is ERC20, OwnerIsCreator {
         uint256 TGOLDReserve = getReserveTGOLD();   // TG Reserve, 1st addLiq -> TG reserve = 0, BUT later txns (later-1) reserve-value
         uint256 CCIP_BnMReserve = getReserveCCIP_BnM();
         
-        ERC20 TGOLDToken = ERC20(TGOLDTokenAddress);          
-        ERC20 CCIP_BnMToken = ERC20(CCIP_BnMTokenAddress);
+        ERC20 TGOLDToken = ERC20(TGOLDAddress);          
+        ERC20 CCIP_BnMToken = ERC20(CCIP_BnMSepoliaAddress);
 
         if(TGOLDReserve == 0) {
             _addBothTokensInLP(TGOLDToken, _amountTGOLD, CCIP_BnMToken, _amountCCIP_BnM);
@@ -67,11 +81,15 @@ contract SenderExchange is ERC20, OwnerIsCreator {
      */
     function _addBothTokensInLP(ERC20 TGOLDToken, uint256 _amountTGOLD, ERC20 CCIP_BnMToken, uint256 _amountCCIP_BnM) internal returns (uint256, uint256) {
         // post manual approval of Exchange.sol as the Spender of TGOLD on behalf of LProvider
+        // adding 1 token to LPool
         TGOLDToken.transferFrom(_msgSender(), address(this), _amountTGOLD);
-        // At POLYGON - CCIP_BnMToken.transferFrom(_msgSender(), address(this), _amountCCIP_BnM);
-        Client.EVM2AnyMessage memory evm2AnyMessage _buildCCIPMessage();
+
+        // adding 2nd token to LPool
+        Client.EVM2AnyMessage memory evm2AnyMessage = _buildCCIPMessageAddLiq(CCIP_BnMMumbaiAddress, _amountCCIP_BnM);
         
-        bytes32 messageId = router.ccipSend();        
+        // few checks for fee + approve LINK
+        // destChainSelector: added in SendMsgPayLink() of PTT.sol
+        bytes32 messageId = router.ccipSend(destChainSelector, evm2AnyMessage);        
         
         emit AddedLiquidtyAsset1(_amountTGOLD);
         emit MessageSent(messageId);
@@ -80,23 +98,38 @@ contract SenderExchange is ERC20, OwnerIsCreator {
      }
 
     // custom helper f(), not standard
-    function _buildCCIPMessage(address _receiver, ) internal returns (Client.EVM2AnyMessage memory) {
+    // only 2-step process this time as no tokens meant to be transferred across
+    function _buildCCIPMessageAddLiq(address _receiver, uint256 amountToMint) internal returns (Client.EVM2AnyMessage memory) {
+        // addressRxExchange: Rx Exchange deployed on Mumbai
+        // amountToMint: amount added for CCIP_BnM token (dep. on Mumbai) in addLiquidity() in SenderExchange
         Client.EVM2AnyMessage memory evm2AnyMessage = Client.EVM2AnyMessage({
-            receiver: abi.encode(_receiver);    // to bytes
-            data: abi.encodeWithSignature("mint(address,uint256)",addressERC20Polygon, amountToMint);
-            
-        })
+            receiver: abi.encode(_receiver),                // to bytes
+            data: abi.encodeWithSignature("mint(address,uint256)", RxExchangeAddress, amountToMint),
+            tokenAmounts: new Client.EVMTokenAmount[](0),   // init array with 0 element, bcz array not needed
+            feeToken: i_link,
+            extraArgs: ""
+        });
+
+        return evm2AnyMessage;
     }
 
     function getReserveTGOLD() public view returns (uint256) {
-        return ERC20(TGOLDTokenAddress).balanceOf(address(this));   // convention - IERC20(address).balanceOf(address)
+        return ERC20(TGOLDAddress).balanceOf(address(this));   // convention - IERC20(address).balanceOf(address)
     }
 
     function getReserveCCIP_BnM() public view returns (uint256) {
-        return ERC20(CCIP_BnMTokenAddress).balanceOf(address(this));   // convention - IERC20(address).balanceOf(address)
+        return ERC20(CCIP_BnMSepoliaAddress).balanceOf(address(this));   // convention - IERC20(address).balanceOf(address)
     }
 
     function getTGOLDTokenAddress() public view returns(address) {
-       return TGOLDTokenAddress;
+       return TGOLDAddress;
+   }
+
+   function getCCIP_BnMTokenAddress() public view returns(address) {
+       return CCIP_BnMSepoliaAddress;
+   }
+
+   function getRxExchangeAddress() public view returns(address) {
+       return RxExchangeAddress;
    }
 }
