@@ -11,6 +11,8 @@ import "hardhat/console.sol";
 contract SenderExchange is ERC20, OwnerIsCreator {
     
     error AddressZeroError();
+    error NotEnoughLINKBalance(uint256 _linkBalance, uint256 ccipFees);
+    error InsufficientERC20Input();
 
     event MessageSent(bytes32 messageId);   // standard type for a msgId returned by router.ccipSend()
     event MessageReceived(bytes32 messageId);
@@ -56,18 +58,35 @@ contract SenderExchange is ERC20, OwnerIsCreator {
     */
     function addLiquidity(uint256 _amountTGOLD, uint256 _amountCCIP_BnM) public returns (uint256) {
         uint256 liquidity;
-        uint256 TGOLDReserve = getReserveTGOLD();   // TG Reserve, 1st addLiq -> TG reserve = 0, BUT later txns (later-1) reserve-value
-        uint256 CCIP_BnMReserve = getReserveCCIP_BnM();
+        uint256 TGOLDReserve = getReserveTGOLD();           // TG Reserve, 1st addLiq -> TG reserve = 0, BUT later txns (later-1) reserve-value
+        uint256 CCIP_BnMReserve = getReserveCCIP_BnM();     // 
         
         ERC20 TGOLDToken = ERC20(TGOLDAddress);          
         ERC20 CCIP_BnMToken = ERC20(CCIP_BnMSepoliaAddress);
 
         if(TGOLDReserve == 0) {
+            // Step # 1: 
             _addBothTokensInLP(TGOLDToken, _amountTGOLD, CCIP_BnMToken, _amountCCIP_BnM);
+            // Step # 2:
+            liquidity = _amountTGOLD;
         } 
         else {
+            // Following the Golden Ratio:
+            uint256 CCIP_BnMTokenAmount = (_amountTGOLD * CCIP_BnMReserve) / TGOLDReserve;
+            
+            if(_amountCCIP_BnM < CCIP_BnMTokenAmount) {
+                revert InsufficientERC20Input();
+            }
 
+            // Step # 1:
+            _addBothTokensInLP(TGOLDToken, _amountTGOLD, CCIP_BnMToken, CCIP_BnMTokenAmount);
+
+            // Step # 2:
+            liquidity = (_amountTGOLD * totalSupply())  / TGOLDReserve;
         }
+
+        _mint(_msgSender(), liquidity);
+        return liquidity;
    }
 
     // ================================
@@ -77,33 +96,47 @@ contract SenderExchange is ERC20, OwnerIsCreator {
      * @dev returns the amount of Eth/TG tokens that are required to be returned to the user/trader upon swap
      * @param _amountTGOLD amount of TGOLD input
      * @param _amountCCIP_BnM amount of CCIP_BnM input
-     * @return (optional)
      */
-    function _addBothTokensInLP(ERC20 TGOLDToken, uint256 _amountTGOLD, ERC20 CCIP_BnMToken, uint256 _amountCCIP_BnM) internal returns (uint256, uint256) {
+    function _addBothTokensInLP(ERC20 TGOLDToken, uint256 _amountTGOLD, ERC20 CCIP_BnMToken, uint256 _amountCCIP_BnM) internal /*returns (uint256, uint256)*/ {
         // post manual approval of Exchange.sol as the Spender of TGOLD on behalf of LProvider
         // adding 1 token to LPool
         TGOLDToken.transferFrom(_msgSender(), address(this), _amountTGOLD);
-
         // adding 2nd token to LPool
+        CCIP_BnMToken.transferFrom(_msgSender(), address(this), _amountCCIP_BnM);
+
+        // Let's now send the msg to CCIP_BnMMumbai to mint(RxExchange.sol, _amountCCIP_BnM) and create Liquidity
         Client.EVM2AnyMessage memory evm2AnyMessage = _buildCCIPMessageAddLiq(CCIP_BnMMumbaiAddress, _amountCCIP_BnM);
         
-        // few checks for fee + approve LINK
         // destChainSelector: added in SendMsgPayLink() of PTT.sol
+        uint64 destChainSelector = 16015286601757825753;
+        IRouterClient router = IRouterClient(i_router);
+        
+        // 1. check LINK fee
+        uint256 fees = router.getFee(destChainSelector, evm2AnyMessage);
+        if(fees > ERC20(i_link).balanceOf(address(this))) {
+            revert NotEnoughLINKBalance(ERC20(i_link).balanceOf(address(this)), fees);
+        }
+
+        // 2. approve router to spend LINK on SenderExchange's behalf
+        ERC20(i_link).approve((i_router), fees);
+        // no other approval as no other token transfer in place
+        
+        // 3. finally, ccipSend()
         bytes32 messageId = router.ccipSend(destChainSelector, evm2AnyMessage);        
         
         emit AddedLiquidtyAsset1(_amountTGOLD);
         emit MessageSent(messageId);
 
-        return (_amountTGOLD, _amountCCIP_BnM);
+        // return (_amountTGOLD, messageId);
      }
 
     // custom helper f(), not standard
     // only 2-step process this time as no tokens meant to be transferred across
-    function _buildCCIPMessageAddLiq(address _receiver, uint256 amountToMint) internal returns (Client.EVM2AnyMessage memory) {
+    function _buildCCIPMessageAddLiq(address _receiver, uint256 amountToMint) internal view returns (Client.EVM2AnyMessage memory) {
         // addressRxExchange: Rx Exchange deployed on Mumbai
         // amountToMint: amount added for CCIP_BnM token (dep. on Mumbai) in addLiquidity() in SenderExchange
         Client.EVM2AnyMessage memory evm2AnyMessage = Client.EVM2AnyMessage({
-            receiver: abi.encode(_receiver),                // to bytes
+            receiver: abi.encode(_receiver),                // address of CCIP_BnMMumbai to rx the encoded calldata of mint(), into bytes
             data: abi.encodeWithSignature("mint(address,uint256)", RxExchangeAddress, amountToMint),
             tokenAmounts: new Client.EVMTokenAmount[](0),   // init array with 0 element, bcz array not needed
             feeToken: i_link,
@@ -133,3 +166,10 @@ contract SenderExchange is ERC20, OwnerIsCreator {
        return RxExchangeAddress;
    }
 }
+
+/*
+Addresses:
+CCIP_BnMMumbai = 0x1FedB55dA6345C8c16A22cd675c490f5c85C2296
+
+
+*/

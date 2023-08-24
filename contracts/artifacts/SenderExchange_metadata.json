@@ -9,12 +9,12 @@
 				"inputs": [
 					{
 						"internalType": "address",
-						"name": "_TGOLDToken",
+						"name": "_TGOLDTokenAddress",
 						"type": "address"
 					},
 					{
 						"internalType": "address",
-						"name": "_CCIP_BnMTokenAddress",
+						"name": "_CCIP_BnMSepoliaAddress",
 						"type": "address"
 					},
 					{
@@ -26,6 +26,11 @@
 						"internalType": "address",
 						"name": "_link",
 						"type": "address"
+					},
+					{
+						"internalType": "address",
+						"name": "_RxExchangeAddress",
+						"type": "address"
 					}
 				],
 				"stateMutability": "nonpayable",
@@ -35,6 +40,40 @@
 				"inputs": [],
 				"name": "AddressZeroError",
 				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "InsufficientERC20Input",
+				"type": "error"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "_linkBalance",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "ccipFees",
+						"type": "uint256"
+					}
+				],
+				"name": "NotEnoughLINKBalance",
+				"type": "error"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "amountTGOLD",
+						"type": "uint256"
+					}
+				],
+				"name": "AddedLiquidtyAsset1",
+				"type": "event"
 			},
 			{
 				"anonymous": false,
@@ -59,6 +98,32 @@
 					}
 				],
 				"name": "Approval",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": false,
+						"internalType": "bytes32",
+						"name": "messageId",
+						"type": "bytes32"
+					}
+				],
+				"name": "MessageReceived",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": false,
+						"internalType": "bytes32",
+						"name": "messageId",
+						"type": "bytes32"
+					}
+				],
+				"name": "MessageSent",
 				"type": "event"
 			},
 			{
@@ -261,6 +326,19 @@
 			},
 			{
 				"inputs": [],
+				"name": "getCCIP_BnMTokenAddress",
+				"outputs": [
+					{
+						"internalType": "address",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
 				"name": "getReserveCCIP_BnM",
 				"outputs": [
 					{
@@ -280,6 +358,19 @@
 						"internalType": "uint256",
 						"name": "",
 						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "getRxExchangeAddress",
+				"outputs": [
+					{
+						"internalType": "address",
+						"name": "",
+						"type": "address"
 					}
 				],
 				"stateMutability": "view",
@@ -554,11 +645,11 @@
 			]
 		},
 		"@chainlink/contracts-ccip/src/v0.8/ccip/libraries/Client.sol": {
-			"keccak256": "0x2fb8e11d517fa5ee213aaab3f4d416155cd2b72d61ba443dbeff6b41d29e9523",
+			"keccak256": "0x36bd630569ab23bba6e56f8cea10408e39b5c9d019491bfd0849db1dd5198139",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://fcdf688dc96619a256fdbddce1a6ceff0f6c57963be267148abdcfd57616725e",
-				"dweb:/ipfs/QmVEF1ZER2V86L8CcMYTqt1VwQ4Xw2pa12pNZbb99UkqRT"
+				"bzz-raw://34b056d702fa503e1790b6b8f59357346b4bc4ccda436a9264a28feabea3b0c5",
+				"dweb:/ipfs/Qmf7tvd9pHyUpqQ9dZ3icdc8nsatSmjuHfH7zHi8abpAwS"
 			]
 		},
 		"@chainlink/contracts-ccip/src/v0.8/interfaces/OwnableInterface.sol": {
@@ -618,11 +709,11 @@
 			]
 		},
 		"contracts/SenderExchange.sol": {
-			"keccak256": "0x5bfb039735a45f358bbca7088196429e807aa2790b15e3f6b9967497f0d03c2d",
+			"keccak256": "0x6e32a6f044746fed9de53326f7df819610d2c614329f7bc60ba8661b738e5b4e",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://3ede6d5d1e2f71a2199c951be5c2eabc3430b1bf87cfe6602c1a5499f148800a",
-				"dweb:/ipfs/QmSadp4XzQdWJHvDWaG2WuPP4sLqePg2rzKQU7hxofGWXQ"
+				"bzz-raw://2f22c91ea13df238c9300cc4bcdd7cd9f57b15a5c33b7cb553871d9d8c41fe73",
+				"dweb:/ipfs/QmZTyhfz2xZPYuELRDxzFcXiPfadnYt9c4Wnr9Df3A6D2P"
 			]
 		},
 		"hardhat/console.sol": {
