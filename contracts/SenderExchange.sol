@@ -22,7 +22,7 @@ contract SenderExchange is ERC20, OwnerIsCreator {
     address private CCIP_BnMSepoliaAddress;
     address private immutable i_router;
     address private immutable i_link;       // to pay CCIPFee in LINK only, for now
-    address private RxExchangeAddress;      // Receiver # 1
+    address private RxExchangeAddress;      // Receiver # 1 (EOA for 1st trial)
     address private CCIP_BnMMumbaiAddress;  // Receiver # 2
     
     constructor 
@@ -31,7 +31,7 @@ contract SenderExchange is ERC20, OwnerIsCreator {
     address _router, 
     address _link,
     address _RxExchangeAddress)
-    ERC20 ("TGOLD Token", "TGLP") {
+    ERC20 ("TGOLD LP Token", "TGLP") {
         
         if(_TGOLDTokenAddress == address(0) || 
         _CCIP_BnMSepoliaAddress == address(0) || 
@@ -73,14 +73,11 @@ contract SenderExchange is ERC20, OwnerIsCreator {
         else {
             // Following the Golden Ratio:
             uint256 CCIP_BnMTokenAmount = (_amountTGOLD * CCIP_BnMReserve) / TGOLDReserve;
-            
             if(_amountCCIP_BnM < CCIP_BnMTokenAmount) {
                 revert InsufficientERC20Input();
             }
-
             // Step # 1:
             _addBothTokensInLP(TGOLDToken, _amountTGOLD, CCIP_BnMToken, CCIP_BnMTokenAmount);
-
             // Step # 2:
             liquidity = (_amountTGOLD * totalSupply())  / TGOLDReserve;
         }
@@ -132,6 +129,7 @@ contract SenderExchange is ERC20, OwnerIsCreator {
 
     // custom helper f(), not standard
     // only 2-step process this time as no tokens meant to be transferred across
+    // _receiver = CCIPBnMMumbaiAddress (ERC20 Token)
     function _buildCCIPMessageAddLiq(address _receiver, uint256 amountToMint) internal view returns (Client.EVM2AnyMessage memory) {
         // addressRxExchange: Rx Exchange deployed on Mumbai
         // amountToMint: amount added for CCIP_BnM token (dep. on Mumbai) in addLiquidity() in SenderExchange
@@ -169,7 +167,13 @@ contract SenderExchange is ERC20, OwnerIsCreator {
 
 /*
 Addresses:
-CCIP_BnMMumbai = 0x1FedB55dA6345C8c16A22cd675c490f5c85C2296
+DummyCCIP_BnMMumbai = 0xed023Eec4560636278fb7793d59cdd2945d6f733
+RxExchangeAddress = 0x2860bE3e5c8221837805129478b9812eb2C577dc (EOA for now)
 
+Sepolia Router = 0xD0daae2231E9CB96b94C8512223533293C3693Bf
+Sepolia Link = 0x779877A7B0D9E8603169DdbD7836e478b4624789
+Sepolia TGOLD = 0x378daa96a43be9a957704285edcf6a1966d99948
+Sepolia CCIPBnM = 0xcfdbc609d8d48273b440198155c8079aea497bcf (custom, mine)
+Sepolia SenderExchange = 
 
 */

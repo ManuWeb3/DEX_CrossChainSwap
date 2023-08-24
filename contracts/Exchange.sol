@@ -23,7 +23,7 @@ contract Exchange is ERC20, CCIPReceiver, OwnerIsCreator {
     error InvalidReserveQuantity();
     error InvalidInputAmount();
     error OutputAmountInsufficient();
-    
+
     event AddedLiquidty(uint256 _amountTGOLD, uint256 _amountCCIP_BnM); // default ERC20 events not that discrete
     event RemovedLiquidity(uint256 _amountTGLP, uint256 _amountTGOLD, uint256 _amountCCIP_BnM);                        // default ERC20 events not that discrete
     event SwappedTGOLDToCCIP_BnM(uint256 _amountTGOLD, uint256 _amountCCIP_BnM);
@@ -379,7 +379,7 @@ contract Exchange is ERC20, CCIPReceiver, OwnerIsCreator {
 /* Deployment values:
 Sepolia Router = 0xD0daae2231E9CB96b94C8512223533293C3693Bf
 Sepolia Link = 0x779877A7B0D9E8603169DdbD7836e478b4624789
-Sepolia TGOLD = 0xd7C126692107D0B89C4613aE3bEf2CEddFFd521C
+Sepolia TGOLD = 0x378daa96a43be9a957704285edcf6a1966d99948
 Sepolia CCIP_BnM = 0xFd57b4ddBf88a4e07fF4e34C487b99af2Fe82a05
 Sepolia Exchange.sol = 0x4392dba791c32858e76fef7800c0508648217f62
 Sepolia Chain Selector = 16015286601757825753

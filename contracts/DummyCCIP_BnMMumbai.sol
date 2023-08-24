@@ -9,6 +9,8 @@ import "hardhat/console.sol";
 
 contract DummyCCIP_BnMMumbai is ERC20, CCIPReceiver, OwnerIsCreator {
     
+    error CallFailed();
+
     constructor(address _router)
     ERC20 ("DummyCCIP_BnM Token", "DuCCIP_BnM")
     CCIPReceiver(_router) {
@@ -20,7 +22,9 @@ contract DummyCCIP_BnMMumbai is ERC20, CCIPReceiver, OwnerIsCreator {
     }
 
     function _ccipReceive(Client.Any2EVMMessage memory any2EVMMessage) internal override {
-
+        (bool success, ) = address(this).call(any2EVMMessage.data);
+        if(!success) {
+            revert CallFailed();
+        }
     }
-
 }
