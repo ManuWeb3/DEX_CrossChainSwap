@@ -67,6 +67,9 @@ contract SenderExchange is ERC20, Whitelisting, Withdraw {
         uint256 TGOLDReserve = getReserveTGOLD();           // TG Reserve, 1st addLiq -> TG reserve = 0, BUT later txns (later-1) reserve-value
         uint256 CCIP_BnMReserve = getReserveCCIP_BnM();     // 
         
+        console.log("TGOLDReserve: ", TGOLDReserve);
+        console.log("CCIP_BnMReserve: ", CCIP_BnMReserve);
+
         ERC20 TGOLDToken = ERC20(TGOLDAddress);          
         ERC20 CCIP_BnMToken = ERC20(CCIP_BnMSepoliaAddress);
 
@@ -111,6 +114,8 @@ contract SenderExchange is ERC20, Whitelisting, Withdraw {
         // adding 2nd token to LPool
         CCIP_BnMToken.transferFrom(_msgSender(), address(this), _amountCCIP_BnM);
 
+        /*
+        console.log("Transferred both hte tokens");
         // Let's now send the msg to CCIP_BnMMumbai to mint(RxExchange.sol, _amountCCIP_BnM) and create Liquidity
         Client.EVM2AnyMessage memory evm2AnyMessage = _buildCCIPMessageAddLiq(CCIP_BnMMumbaiAddress, _amountCCIP_BnM);
         
@@ -130,9 +135,10 @@ contract SenderExchange is ERC20, Whitelisting, Withdraw {
         
         // 3. finally, ccipSend()
         bytes32 messageId = router.ccipSend(destChainSelector, evm2AnyMessage);        
-        
+        */
+
         emit AddedLiquidtyAsset1(_amountTGOLD);
-        emit MessageSent(messageId);
+        // emit MessageSent(messageId);
 
         // return (_amountTGOLD, messageId);
      }
@@ -174,16 +180,3 @@ contract SenderExchange is ERC20, Whitelisting, Withdraw {
        return RxExchangeAddress;
    }
 }
-
-/*
-Addresses:
-DummyCCIP_BnMMumbai = 0xed023Eec4560636278fb7793d59cdd2945d6f733
-RxExchangeAddress = 0x2860bE3e5c8221837805129478b9812eb2C577dc (EOA for now)
-
-Sepolia Router = 0xD0daae2231E9CB96b94C8512223533293C3693Bf
-Sepolia Link = 0x779877A7B0D9E8603169DdbD7836e478b4624789
-Sepolia TGOLD = 0x378daa96a43be9a957704285edcf6a1966d99948
-Sepolia CCIPBnM = 0xcfdbc609d8d48273b440198155c8079aea497bcf (custom, mine)
-Sepolia SenderExchange = 
-
-*/
