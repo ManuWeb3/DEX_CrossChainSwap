@@ -114,7 +114,7 @@ contract SenderExchange is ERC20, Whitelisting, Withdraw {
         // adding 2nd token to LPool
         CCIP_BnMToken.transferFrom(_msgSender(), address(this), _amountCCIP_BnM);
 
-        /*
+        /* ==========================================
         console.log("Transferred both hte tokens");
         // Let's now send the msg to CCIP_BnMMumbai to mint(RxExchange.sol, _amountCCIP_BnM) and create Liquidity
         Client.EVM2AnyMessage memory evm2AnyMessage = _buildCCIPMessageAddLiq(CCIP_BnMMumbaiAddress, _amountCCIP_BnM);
@@ -135,7 +135,7 @@ contract SenderExchange is ERC20, Whitelisting, Withdraw {
         
         // 3. finally, ccipSend()
         bytes32 messageId = router.ccipSend(destChainSelector, evm2AnyMessage);        
-        */
+        ==========================================*/
 
         emit AddedLiquidtyAsset1(_amountTGOLD);
         // emit MessageSent(messageId);
