@@ -226,6 +226,7 @@ contract Exchange is ERC20, CCIPReceiver, OwnerIsCreator {
     // Following the Golden FROMULAE of swap (Constant Product)
     uint256 CCIP_BnMRes = getReserveCCIP_BnM();
     uint256 TGOLDRes = getReserveTGOLD();
+    // LIKEWISE, we did fetch reserves of TGOLD and CCIP_BnM in addLiq()...
     // i/p reserve is TGOLD reserve, RIGHT before we transferred TGOLD to the contract for swap
     // bcz Denominator of Golden Formlae is (x + Delta x) and 'x' is exclusive of 'Delta x' at this point
     uint256 amountCCIP_BnM = getAmountOfTokens(       // 1% swap/trade fee taken care of in this f() above
