@@ -13,6 +13,7 @@ import "hardhat/console.sol";
 
 contract SenderExchange is ERC20, Whitelisting, Withdraw {
 
+    error CallFailed();
     error AddressZeroError();
     error NotEnoughLINKBalance(uint256 _linkBalance, uint256 ccipFees);
     error InsufficientERC20Input();
@@ -21,22 +22,23 @@ contract SenderExchange is ERC20, Whitelisting, Withdraw {
     event MessageReceived(bytes32 messageId);
     event AddedLiquidtyAsset1(uint256 amountTGOLD);
 
+    // kept private as SenderExchange won't be inherited as is
     address private TGOLDAddress;
     address private CCIP_BnMSepoliaAddress;
     address private immutable i_router;
     address private immutable i_link;       // to pay CCIPFee in LINK only, for now
-    address private RxExchangeAddress;      // Receiver # 1 (EOA for 1st trial)
-    address private CCIP_BnMMumbaiAddress;  // Receiver # 2
+    address private RxExchangeAddress;      // Receiver # 1 ("to", EOA for 1st trial)
+    address private CCIP_BnMMumbaiAddress;  // Receiver # 2 (overrides _ccipReceive())
 
     constructor 
-    (address _TGOLDTokenAddress, 
+    (address _TGOLDTokenAddress,    // ideally, not needed in RxExchange.sol, but will keep, user's discretion advised
     address _CCIP_BnMSepoliaAddress, 
     address _router, 
     address _link,
     address _RxExchangeAddress,
     address _CCIP_BnMMumbaiAddress)
-    ERC20 ("TGOLD LP Token", "TGLP") {
-        
+    ERC20 ("TGOLD LP Token", "TGLP")
+    {
         if(_TGOLDTokenAddress == address(0) || 
         _CCIP_BnMSepoliaAddress == address(0) || 
         _router == address(0) || 
@@ -52,7 +54,7 @@ contract SenderExchange is ERC20, Whitelisting, Withdraw {
         CCIP_BnMSepoliaAddress = _CCIP_BnMSepoliaAddress;
         i_router = _router;
         i_link = _link;
-        RxExchangeAddress = _RxExchangeAddress;
+        RxExchangeAddress = _RxExchangeAddress;     // ("to") will get equivalent funds on Mumbai, post-mint()
         CCIP_BnMMumbaiAddress = _CCIP_BnMMumbaiAddress;
     }
 
@@ -114,13 +116,13 @@ contract SenderExchange is ERC20, Whitelisting, Withdraw {
         // adding 2nd token to LPool
         CCIP_BnMToken.transferFrom(_msgSender(), address(this), _amountCCIP_BnM);
 
-        /* ==========================================
-        console.log("Transferred both hte tokens");
+        
+        console.log("Transferred both the tokens");
         // Let's now send the msg to CCIP_BnMMumbai to mint(RxExchange.sol, _amountCCIP_BnM) and create Liquidity
         Client.EVM2AnyMessage memory evm2AnyMessage = _buildCCIPMessageAddLiq(CCIP_BnMMumbaiAddress, _amountCCIP_BnM);
         
         // destChainSelector: added in SendMsgPayLink() of PTT.sol
-        uint64 destChainSelector = 16015286601757825753;
+        uint64 destChainSelector = 12532609583862916517;
         IRouterClient router = IRouterClient(i_router);
         
         // 1. check LINK fee
@@ -130,15 +132,14 @@ contract SenderExchange is ERC20, Whitelisting, Withdraw {
         }
 
         // 2. approve router to spend LINK on SenderExchange's behalf
-        ERC20(i_link).approve((i_router), fees);
+        LinkTokenInterface(i_link).approve((i_router), fees);
         // no other approval as no other token transfer in place
         
         // 3. finally, ccipSend()
         bytes32 messageId = router.ccipSend(destChainSelector, evm2AnyMessage);        
-        ==========================================*/
-
+       
         emit AddedLiquidtyAsset1(_amountTGOLD);
-        // emit MessageSent(messageId);
+        emit MessageSent(messageId);
 
         // return (_amountTGOLD, messageId);
      }
