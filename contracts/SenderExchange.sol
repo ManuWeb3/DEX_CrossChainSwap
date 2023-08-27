@@ -144,7 +144,16 @@ contract SenderExchange is ERC20, Whitelisting, Withdraw {
         // return (_amountTGOLD, messageId);
      }
 
-     function 
+    /**
+    * @dev Swaps TGOLD for CCIP_BnM
+    * @param amountTGOLD amount user deposited to swap into CCIP_BnM
+    * @param minCCIP_BnM minimum of CCIP_BnM that user expects to get after cross-chain swap
+    */
+     function swapTGOLDToCCIP_BnM(uint256 amountTGOLD, uint256 minCCIP_BnM) public {
+         // Following the Golden FROMULAE of swap (Constant Product)
+        uint256 CCIP_BnMRes = getReserveCCIP_BnM();
+        uint256 TGOLDRes = getReserveTGOLD();
+     }
 
     // custom helper f(), not standard
     // only 2-step process this time as no tokens meant to be transferred across
