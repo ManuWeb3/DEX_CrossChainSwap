@@ -7,4 +7,6 @@ import {ConfirmedOwner} from "../../ConfirmedOwner.sol";
 /// @notice A contract with helpers for basic contract ownership.
 contract OwnerIsCreator is ConfirmedOwner {
   constructor() ConfirmedOwner(msg.sender) {}
+  // only a Global Variable can be passed to  ConfirmedOwner's constructor() 
+  // without passing any arg to inherited OwnerIsCreator contract
 }

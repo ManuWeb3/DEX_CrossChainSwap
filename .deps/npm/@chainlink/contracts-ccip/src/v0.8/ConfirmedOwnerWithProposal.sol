@@ -2,14 +2,15 @@
 pragma solidity ^0.8.0;
 
 import "./interfaces/OwnableInterface.sol";
-
+import "@openzeppelin/contracts/access/Ownable.sol";
 /**
  * @title The ConfirmedOwner contract
  * @notice A contract with helpers for basic contract ownership.
+ * can be deployed independently, not abstract
  */
 contract ConfirmedOwnerWithProposal is OwnableInterface {
-  address private s_owner;
-  address private s_pendingOwner;
+  address private s_owner;        // 4646 (pending / current)
+  address private s_pendingOwner; // 77dc (proposed / pending)
 
   event OwnershipTransferRequested(address indexed from, address indexed to);
   event OwnershipTransferred(address indexed from, address indexed to);

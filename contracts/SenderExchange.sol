@@ -17,11 +17,14 @@ contract SenderExchange is ERC20, Whitelisting, Withdraw {
     error AddressZeroError();
     error NotEnoughLINKBalance(uint256 _linkBalance, uint256 ccipFees);
     error InsufficientERC20Input();
+    error InvalidReserveQuantity();
+    error OutputAmountInsufficient();
 
     event MessageSent(bytes32 messageId);   // standard type for a msgId returned by router.ccipSend()
     event MessageReceived(bytes32 messageId);
-    event AddedLiquidtyAsset1(uint256 amountTGOLD);
-
+    event AddedLiquidtyTGOLD(uint256 amountTGOLD);
+    event QtyTGOLDToBeSwapped(uint256 amountTGOLD);
+    
     // kept private as SenderExchange won't be inherited as is
     address private TGOLDAddress;
     address private CCIP_BnMSepoliaAddress;
@@ -61,10 +64,10 @@ contract SenderExchange is ERC20, Whitelisting, Withdraw {
     /**
     * @dev Adds 2 liquidityPool assets to the exchange.
     * @notice
-    * @param _amountTGOLD TG Tokens deposited by the LP
-    * @param _amountCCIP_BnM CCIP_BnM tokens deposited by the LP
+    * @param amountTGOLD TG Tokens deposited by the LP
+    * @param amountCCIP_BnM CCIP_BnM tokens deposited by the LP
     */
-    function addLiquidity(uint256 _amountTGOLD, uint256 _amountCCIP_BnM) external returns (uint256) {
+    function addLiquidity(uint256 amountTGOLD, uint256 amountCCIP_BnM) external returns (uint256) {
         uint256 liquidity;
         uint256 TGOLDReserve = getReserveTGOLD();           // TG Reserve, 1st addLiq -> TG reserve = 0, BUT later txns (later-1) reserve-value
         uint256 CCIP_BnMReserve = getReserveCCIP_BnM();     // 
@@ -77,29 +80,57 @@ contract SenderExchange is ERC20, Whitelisting, Withdraw {
 
         if(TGOLDReserve == 0) {
             // Step # 1: 
-            _addBothTokensInLP(TGOLDToken, _amountTGOLD, CCIP_BnMToken, _amountCCIP_BnM);
+            _addBothTokensInLP(TGOLDToken, amountTGOLD, CCIP_BnMToken, amountCCIP_BnM);
             // Step # 2:
-            liquidity = _amountTGOLD;
+            liquidity = amountTGOLD;
         } 
         else {
             // Following the Golden Ratio:
-            uint256 CCIP_BnMTokenAmount = (_amountTGOLD * CCIP_BnMReserve) / TGOLDReserve;
-            if(_amountCCIP_BnM < CCIP_BnMTokenAmount) {
+            uint256 CCIP_BnMTokenAmount = (amountTGOLD * CCIP_BnMReserve) / TGOLDReserve;
+            if(amountCCIP_BnM < CCIP_BnMTokenAmount) {
                 revert InsufficientERC20Input();
             }
             // Step # 1:
-            _addBothTokensInLP(TGOLDToken, _amountTGOLD, CCIP_BnMToken, CCIP_BnMTokenAmount);
+            _addBothTokensInLP(TGOLDToken, amountTGOLD, CCIP_BnMToken, CCIP_BnMTokenAmount);
             // Step # 2:
-            liquidity = (_amountTGOLD * totalSupply())  / TGOLDReserve;
+            liquidity = (amountTGOLD * totalSupply())  / TGOLDReserve;
         }
 
         _mint(_msgSender(), liquidity);
         return liquidity;
    }
 
-   receive() external payable {}
+   /**
+    * @dev Swaps TGOLD for CCIP_BnM
+    * @param amountTGOLD amount user deposited to swap into CCIP_BnM
+    * @param minCCIP_BnM minimum of CCIP_BnM that user expects to get after cross-chain swap
+    */
+     function swapTGOLDToCCIP_BnM(uint256 amountTGOLD, uint256 minCCIP_BnM) public {
+         // Following the Golden FROMULAE of swap (Constant Product)
+        uint256 CCIP_BnMRes = getReserveCCIP_BnM();
+        uint256 TGOLDRes = getReserveTGOLD();
+        // to calc. amount of 'y' that user will get after swap
+        uint256 amountCCIP_BnM = getAmountOfTokens(       // 1% swap/trade fee taken care of in this f() above
+        amountTGOLD,            
+        TGOLDRes,               
+        CCIP_BnMRes);
+        
+        if(amountCCIP_BnM < minCCIP_BnM) {
+            revert OutputAmountInsufficient();
+        }
 
-   fallback() external payable {}
+        IERC20(TGOLDAddress).transferFrom(_msgSender(), address(this), amountTGOLD);
+
+        /*CCIP codebase:
+        will construct evm2anymessage with calldata: "swapTGOLDToCCIP_BnM(swapRxAddress, amountCCIP_BnM)" in RxExchange.sol
+        */
+
+        emit QtyTGOLDToBeSwapped(amountTGOLD);
+    }
+
+        receive() external payable {}
+
+        fallback() external payable {}
 
     // ================================
     // GETTERS / Other Helper or internal functions
@@ -138,21 +169,10 @@ contract SenderExchange is ERC20, Whitelisting, Withdraw {
         // 3. finally, ccipSend()
         bytes32 messageId = router.ccipSend(destChainSelector, evm2AnyMessage);        
        
-        emit AddedLiquidtyAsset1(_amountTGOLD);
+        emit AddedLiquidtyTGOLD(_amountTGOLD);
         emit MessageSent(messageId);
 
         // return (_amountTGOLD, messageId);
-     }
-
-    /**
-    * @dev Swaps TGOLD for CCIP_BnM
-    * @param amountTGOLD amount user deposited to swap into CCIP_BnM
-    * @param minCCIP_BnM minimum of CCIP_BnM that user expects to get after cross-chain swap
-    */
-     function swapTGOLDToCCIP_BnM(uint256 amountTGOLD, uint256 minCCIP_BnM) public {
-         // Following the Golden FROMULAE of swap (Constant Product)
-        uint256 CCIP_BnMRes = getReserveCCIP_BnM();
-        uint256 TGOLDRes = getReserveTGOLD();
      }
 
     // custom helper f(), not standard
@@ -170,6 +190,35 @@ contract SenderExchange is ERC20, Whitelisting, Withdraw {
         });
 
         return evm2AnyMessage;
+    }
+
+    /**
+     * @dev returns the amount of TG/CCIP_BnM tokens that are required to be returned to the user/trader upon swap
+     */
+    function getAmountOfTokens(
+    uint256 inputAmount, 
+    uint256 inputReserve, 
+    uint256 outputReserve) 
+    public pure returns (uint256) {
+        if(inputReserve < 0 || outputReserve < 0) {
+            revert InvalidReserveQuantity();
+        }
+        // We are charging a fee of `1%`
+        // Input amount with fee = (input amount - (1*(input amount)/100)) = ((input amount)*99)/100
+        uint256 inputAmountWithFee = (inputAmount*99)/100;
+        // Because we need to follow the concept of `XY = K` curve
+        // We need to make sure (x + Δx) * (y - Δy) = x * y
+        // So the final formula is Δy = (y * Δx) / (x + Δx)
+        // Δy in our case is `tokens to be received`
+        // Δx = ((input amount)*99)/100, x = inputReserve, y = outputReserve
+        // So by putting the values in the formulae you can get the numerator and denominator
+        uint256 numerator = outputReserve * inputAmountWithFee;
+        uint256 denominator = inputReserve + inputAmountWithFee;
+        // console.log("inputAmount: ", inputAmount);
+        // console.log("inputAmountWithFee: ", inputAmountWithFee);
+        // console.log("numerator: ", numerator);
+        // console.log("denominator: ", denominator);
+        return numerator / denominator;
     }
 
     function getReserveTGOLD() public view returns (uint256) {

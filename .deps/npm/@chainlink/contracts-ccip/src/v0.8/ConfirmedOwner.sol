@@ -9,4 +9,5 @@ import "./ConfirmedOwnerWithProposal.sol";
  */
 contract ConfirmedOwner is ConfirmedOwnerWithProposal {
   constructor(address newOwner) ConfirmedOwnerWithProposal(newOwner, address(0)) {}
+  // pendingOwner is made address(0) for now
 }
