@@ -12,8 +12,14 @@ contract CCIPDestContract is CCIPReceiver, Whitelisting {
     error CallFailed();
     error AddressZeroError();
 
+    address private immutable i_rxExchangeAddress;
+
     // Polygon-Mumbai's router
-    constructor(address _router) CCIPReceiver(_router) {}
+    constructor(address _router, address _rxExchangeAddress) CCIPReceiver(_router) {
+        if(_rxExchangeAddress == address(0)) revert AddressZeroError();     // no braces {} needed, same line revert
+
+        i_rxExchangeAddress = _rxExchangeAddress;
+    }
 
     function _ccipReceive(Client.Any2EVMMessage memory any2EVMMessage) 
     internal 
@@ -21,10 +27,14 @@ contract CCIPDestContract is CCIPReceiver, Whitelisting {
     onlyWhitelistedSourceChain(any2EVMMessage.sourceChainSelector)       // Make sure source chain is whitelisted   // both checks in receive   // external, hence inherited here
     onlyWhitelistedSenders(abi.decode(any2EVMMessage.sender, (address))) // Make sure the sender is whitelisted     // both checks in receive   // external, hence inherited here
     {
-        (bool success, ) = Rx_EXCHANGE.call(any2EVMMessage.data);
+        (bool success, ) = i_rxExchangeAddress.call(any2EVMMessage.data);
         if(!success) {
             revert CallFailed();
         }
     }
+
+    function getRxExchangeAddress() public view returns(address) {
+       return i_rxExchangeAddress;
+   }
 
 }
