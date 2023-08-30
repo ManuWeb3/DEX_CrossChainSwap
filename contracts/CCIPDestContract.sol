@@ -7,6 +7,7 @@ import {CCIPReceiver} from "@chainlink/contracts-ccip/src/v0.8/ccip/applications
 import "./Whitelisting.sol";
 import "hardhat/console.sol";
 
+// to add modularity for swap operation
 contract CCIPDestContract is CCIPReceiver, Whitelisting {
 
     error CallFailed();

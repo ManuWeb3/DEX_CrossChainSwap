@@ -8,6 +8,7 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "./Whitelisting.sol";
 import "hardhat/console.sol";
 
+// To add, remove liquidity of DummyCCIP_BnM on Mumbai
 contract DummyCCIP_BnMMumbai is ERC20, CCIPReceiver, Whitelisting {
     
     error CallFailed();

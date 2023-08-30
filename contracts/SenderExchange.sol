@@ -32,6 +32,7 @@ contract SenderExchange is ERC20, Whitelisting, Withdraw {
     address private immutable i_link;       // to pay CCIPFee in LINK only, for now
     address private RxExchangeAddress;      // Receiver # 1 ("to", EOA for 1st trial)
     address private CCIP_BnMMumbaiAddress;  // Receiver # 2 (overrides _ccipReceive())
+    address private CCIPDestContractAddress;
 
     constructor 
     (address _TGOLDTokenAddress,    // ideally, not needed in RxExchange.sol, but will keep, user's discretion advised
@@ -39,7 +40,8 @@ contract SenderExchange is ERC20, Whitelisting, Withdraw {
     address _router, 
     address _link,
     address _RxExchangeAddress,
-    address _CCIP_BnMMumbaiAddress)
+    address _CCIP_BnMMumbaiAddress,
+    address _CCIPDestContractAddress)
     ERC20 ("TGOLD LP Token", "TGLP")
     {
         if(_TGOLDTokenAddress == address(0) || 
@@ -47,7 +49,8 @@ contract SenderExchange is ERC20, Whitelisting, Withdraw {
         _router == address(0) || 
         _link == address(0) ||
         _RxExchangeAddress == address(0) ||
-        _CCIP_BnMMumbaiAddress == address(0)
+        _CCIP_BnMMumbaiAddress == address(0) ||
+        _CCIPDestContractAddress == address(0)
         ) 
         {
             revert AddressZeroError();
@@ -59,6 +62,7 @@ contract SenderExchange is ERC20, Whitelisting, Withdraw {
         i_link = _link;
         RxExchangeAddress = _RxExchangeAddress;     // ("to") will get equivalent funds on Mumbai, post-mint()
         CCIP_BnMMumbaiAddress = _CCIP_BnMMumbaiAddress;
+        CCIPDestContractAddress = _CCIPDestContractAddress;
     }
 
     /**
@@ -105,7 +109,7 @@ contract SenderExchange is ERC20, Whitelisting, Withdraw {
     * @param amountTGOLD amount user deposited to swap into CCIP_BnM
     * @param minCCIP_BnM minimum of CCIP_BnM that user expects to get after cross-chain swap
     */
-     function swapTGOLDToCCIP_BnM(uint256 amountTGOLD, uint256 minCCIP_BnM) public {
+     function swapTGOLDToCCIP_BnM(uint256 amountTGOLD, uint256 minCCIP_BnM, address rxOfSwappedCCIPBnM) public {
          // Following the Golden FROMULAE of swap (Constant Product)
         uint256 CCIP_BnMRes = getReserveCCIP_BnM();
         uint256 TGOLDRes = getReserveTGOLD();
@@ -122,10 +126,34 @@ contract SenderExchange is ERC20, Whitelisting, Withdraw {
         IERC20(TGOLDAddress).transferFrom(_msgSender(), address(this), amountTGOLD);
 
         /*CCIP codebase:
-        will construct evm2anymessage with calldata: "swapTGOLDToCCIP_BnM(swapRxAddress, amountCCIP_BnM)" in RxExchange.sol
+        will construct evm2AnyMessage with calldata: "swapTGOLDToCCIP_BnM(swapRxAddress, amountCCIP_BnM)" in RxExchange.sol
+        and send it over to CCIPDestContract.sol
         */
+        Client.EVM2AnyMessage memory evm2AnyMessage 
+        = _buildCCIPMessageSwapTGOLDCCIP_BnM(
+            CCIPDestContractAddress,
+            rxOfSwappedCCIPBnM, 
+            amountCCIP_BnM);
+        
+        // destChainSelector: added in SendMsgPayLink() of PTT.sol
+        uint64 destChainSelector = 12532609583862916517;
+        IRouterClient router = IRouterClient(i_router);
+        
+        // 1. check LINK fee
+        uint256 fees = router.getFee(destChainSelector, evm2AnyMessage);
+        if(fees > ERC20(i_link).balanceOf(address(this))) {
+            revert NotEnoughLINKBalance(ERC20(i_link).balanceOf(address(this)), fees);
+        }
+
+        // 2. approve router to spend LINK on SenderExchange's behalf
+        LinkTokenInterface(i_link).approve((i_router), fees);
+        // no other approval as no other token transfer in place
+        
+        // 3. finally, ccipSend()
+        bytes32 messageId = router.ccipSend(destChainSelector, evm2AnyMessage);
 
         emit QtyTGOLDToBeSwapped(amountTGOLD);
+        emit MessageSent(messageId);
     }
 
         receive() external payable {}
@@ -179,16 +207,37 @@ contract SenderExchange is ERC20, Whitelisting, Withdraw {
     // only 2-step process this time as no tokens meant to be transferred across
     // _receiver = CCIPBnMMumbaiAddress (ERC20 Token)
     function _buildCCIPMessageAddLiq(address _receiver, uint256 amountToMint) internal view returns (Client.EVM2AnyMessage memory) {
-        // addressRxExchange: Rx Exchange deployed on Mumbai
-        // amountToMint: amount added for CCIP_BnM token (dep. on Mumbai) in addLiquidity() in SenderExchange
+        // RxExchangeAddress: Rx Exchange deployed on Mumbai to which tokens minted
+        // amountToMint: amount added for CCIP_BnM token to Rx Exchange (both dep. on Mumbai) as per addLiquidity() in SenderExchange
+        // Step # 1: construct msg
         Client.EVM2AnyMessage memory evm2AnyMessage = Client.EVM2AnyMessage({
-            receiver: abi.encode(_receiver),                // address of CCIP_BnMMumbai to rx the encoded calldata of mint(), into bytes
+            receiver: abi.encode(_receiver),                // address of CCIP_BnMMumbai to rx the encoded calldata of mint(), in bytes
             data: abi.encodeWithSignature("mint(address,uint256)", RxExchangeAddress, amountToMint),
             tokenAmounts: new Client.EVMTokenAmount[](0),   // init array with 0 element, bcz array not needed
             feeToken: i_link,
             extraArgs: ""
         });
+        // Step # 2: return msg
+        return evm2AnyMessage;
+    }
 
+    // only 2-step process this time as no tokens meant to be transferred across
+    function _buildCCIPMessageSwapTGOLDCCIP_BnM
+    (address _ccipMsgReceiver, 
+    address rxOfSwappedCCIPBnM, 
+    uint256 amountCCIPBnMRxPostSwap) 
+    internal view returns (Client.EVM2AnyMessage memory) {
+        // CCIPDestContract: deployed on Mumbai
+        // amountToSwap: amount of CCIP_BnM token (dep. on Mumbai) sent to EOA on Mumbai as per swapTGOLDToCCIP_BnM() in SenderExchange
+        // Step # 1: construct msg
+        Client.EVM2AnyMessage memory evm2AnyMessage = Client.EVM2AnyMessage({
+            receiver: abi.encode(_ccipMsgReceiver),         // address of CCIPDestContract to rx the encoded calldata of swap(), in bytes
+            data: abi.encodeWithSignature("swapTGOLDToCCIP_BnM(address,uint256)", rxOfSwappedCCIPBnM, amountCCIPBnMRxPostSwap),
+            tokenAmounts: new Client.EVMTokenAmount[](0),   // init array with 0 element, bcz array not needed
+            feeToken: i_link,
+            extraArgs: ""
+        });
+        // Step # 2: return msg
         return evm2AnyMessage;
     }
 
@@ -239,5 +288,9 @@ contract SenderExchange is ERC20, Whitelisting, Withdraw {
 
    function getRxExchangeAddress() public view returns(address) {
        return RxExchangeAddress;
+   }
+
+   function getCCIPDestAddress() public view returns(address) {
+       return CCIPDestContractAddress;
    }
 }
